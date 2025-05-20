@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login | NSTE</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #b3d9ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 100, 0.3);
+            text-align: center;
+            width: 400px;
+        }
+
+        .login-box img {
+            width: 100px;
+            margin-bottom: 5px;
+        }
+
+        .login-box h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Toggle Button Style */
+        .toggle-group {
+            display: inline-flex;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #e3f0ff;
+            border: 1px solid #aad4ff;
+        }
+
+        .toggle-group button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #004080;
+            transition: background 0.3s;
+        }
+
+        .toggle-group button.active {
+            background-color: #aad4ff;
+            color: #003366;
+        }
+
+        .login-box input {
+            width: 95%;
+            padding: 10px;
+            margin-top: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .login-box button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #99ccff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-box p {
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .login-box a {
+            color: #0047ab;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-box">
+        <a href="index.html"><img src="img/logo.png" alt="Logo"></a>
+        <h2>Login</h2>
+
+        <!-- Toggle Buttons for Credentials -->
+        <div class="toggle-group">
+            <button id="adminBtn" class="active">Admin Credentials</button>
+            <button id="userBtn">User Credentials</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Your email..." required>
+            <input type="password" id="password" placeholder="Password..." required>
+            <button type="submit">Sign In</button>
+        </form>
+
+        <p>Don't have an account yet? <a href="sign-up.html">Sign up</a></p>
+    </div>
+
+    <!-- Firebase SDKs (all compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+            authDomain: "nste-booking-system.firebaseapp.com",
+            projectId: "nste-booking-system",
+            storageBucket: "nste-booking-system.appspot.com",
+            messagingSenderId: "574207536433",
+            appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const adminBtn = document.getElementById("adminBtn");
+        const userBtn = document.getElementById("userBtn");
+
+        adminBtn.addEventListener("click", () => {
+            adminBtn.classList.add("active");
+            userBtn.classList.remove("active");
+        });
+
+        userBtn.addEventListener("click", () => {
+            userBtn.classList.add("active");
+            adminBtn.classList.remove("active");
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const isAdminSelected = adminBtn.classList.contains("active");
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    const uid = user.uid;
+
+                    // Fetch user role from Firestore
+                    return db.collection("users").doc(uid).get();
+                })
+                .then((doc) => {
+                    if (!doc.exists) {
+                        alert("User record not found in Firestore.");
+                        return;
+                    }
+
+                    const roleInFirestore = doc.data().role;
+
+                    // Check if role matches the selected toggle
+                    if ((isAdminSelected && roleInFirestore === "admin") ||
+                        (!isAdminSelected && roleInFirestore === "user")) {
+                        window.location.href = isAdminSelected ? "admin-dashboard.html" : "user-dashboard.html";
+                    } else {
+                        alert("Role mismatch! You selected the wrong login mode.");
+                        auth.signOut(); // log them out if role mismatched
+                    }
+                })
+                .catch((error) => {
+                    alert("Login failed: " + error.message);
+                });
+        });
+    </script>
+
+
+</body>
+
+</html>
