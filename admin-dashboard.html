@@ -73,14 +73,14 @@
         document.getElementById("adminName").innerText = `Name: ${user.displayName || "Admin"}`;
         document.getElementById("adminEmail").innerText = `Email: ${user.email}`;
       } else {
-        window.location.href = "/login.html";
+        location.href = "/login.html";
       }
     });
 
     function logout() {
       auth.signOut().then(() => {
         alert("Logged out");
-        window.location.href = "/login.html";
+        location.href = "/login.html";
       });
     }
   </script>
