@@ -73,14 +73,14 @@
         document.getElementById("adminName").innerText = `Name: ${user.displayName || "Admin"}`;
         document.getElementById("adminEmail").innerText = `Email: ${user.email}`;
       } else {
-        location.href = "/login.html";
+        windows.location.href = "https://aibyta.github.io/nste.github.io/login.html";
       }
     });
 
     function logout() {
       auth.signOut().then(() => {
         alert("Logged out");
-        location.href = "/login.html";
+        windows.location.href = "https://aibyta.github.io/nste.github.io/login.html";
       });
     }
   </script>
