@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About | NSTE</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+
+
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo">
+            NSTE Tennis Academy
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="facilities.html">Facilities</a>
+            <a href="about.html">About us</a>
+            <a href="contact.html">Contact us</a>
+        </nav>
+        <div class="auth-buttons">
+            <button onclick="window.location.href='sign-up.html';">Login/Sign up</button>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section style="background-color: #e0e1e2; padding: 60px 20px; text-align: center;">
+        <h2 style="color: #0a0a23; font-size: 32px; font-weight: bold; margin-bottom: 20px;">About Our Academy</h2>
+        <p style="font-size: 18px; color: #333; max-width: 900px; margin: 0 auto 30px;">
+            Our aim is to achieve the best possible outcome for our students, We are thriving to build our students
+            minds to be more competitive and mentally and physically fit. We have a highly trained team of tennis
+            coaches that will always be there for our students. All our coaches have international training and
+            experience for a number of years in the professional tennis training circuit.
+        </p>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats"
+        style="display: flex; justify-content: center; gap: 60px; padding: 40px 20px; background-color: white; flex-wrap: wrap;">
+        <div style="text-align: center;">
+            <h3 class="counter" data-target="2800" style="font-size: 28px; font-weight: bold; color: #0a0a23;">0</h3>
+            <p style="color: #4a4a4a;">Bookings Made</p>
+        </div>
+        <div style="text-align: center;">
+            <h3 class="counter" data-target="140" style="font-size: 28px; font-weight: bold; color: #0a0a23;">0</h3>
+            <p style="color: #4a4a4a;">Team Members</p>
+        </div>
+        <div style="text-align: center;">
+            <h3 class="counter" data-target="1000" style="font-size: 28px; font-weight: bold; color: #0a0a23;">0</h3>
+            <p style="color: #4a4a4a;">Satisfied Customers</p>
+        </div>
+    </section>
+
+    <section style="text-align: center;background-color: #e7e9eb; padding: 30px 20px;color: #2f2f6d;">
+        <div>
+            <h1>Our Core Values</h1>
+            <p>Our commitment to integrity, innovation, and customer satisfaction drives everything we do. We believe in
+                creating value for our users by offering transparent services, continuously improving, and adapting to
+                their needs.</p>
+        </div>
+    </section>
+    <section id="reviews" class="reviews-section">
+        <h2 class="section-title" style="text-align:center;">Our Customer Reviews</h2>
+
+        <div class="swiper-container" style="max-width: 900px; margin: 0 auto;">
+            <div class="swiper-wrapper">
+
+                <!-- Slide 1 -->
+                <div class="swiper-slide"
+                    style="background-image: url('img/tennis.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                    <div class="review-card">
+                        <img src="img/user1.jpeg" alt="User" class="user-img">
+                        <div class="review-text">
+                            Back in action. Time to get fit. As usual driving from Taiping to Penang...
+                        </div>
+                        <h4 class="review-name">Ziera Roosli</h4>
+                        <span class="review-role">Amateur Tennis Player</span>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="swiper-slide"
+                    style="background-image: url('img/tennis.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                    <div class="review-card">
+                        <img src="img/tennis.jpeg" alt="User" class="user-img">
+                        <div class="review-text">
+                            Satu pengalaman dan suasana yang baik untuk mendalami ilmu tenis di NSTE
+                            Tennis academy. Tip-tip dan teknik yang diajar oleh jurulatih yang
+                            berpengalaman dapat memberi keyakinan dalam permainan tenis bersama
+                            rakan-rakan sosial.NSTE Tennis Akademy memang tebaik !!!...
+                        </div>
+                        <h4 class="review-name">Ahmad Aizzudin</h4>
+                        <span class="review-role">Recreational Tennis Player</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Pagination dots -->
+            <div class="swiper-pagination"></div>
+
+            <!-- Optional navigation arrows -->
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+    </section>
+
+
+    <button id="scrollToTopBtn" title="Go to top">↑</button>
+    <script>
+        const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+        window.onscroll = function () {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollToTopBtn.classList.add("show");
+            } else {
+                scrollToTopBtn.classList.remove("show");
+            }
+        };
+
+        scrollToTopBtn.onclick = function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    </script>
+    <!-- JavaScript for Animation -->
+    <script>
+        const counters = document.querySelectorAll('.counter');
+        let statsAnimated = false;
+
+        function animateCounters() {
+            if (statsAnimated) return; // Prevent rerunning
+            statsAnimated = true;
+
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const current = +counter.innerText;
+                    const increment = Math.ceil(target / 100);
+
+                    if (current < target) {
+                        counter.innerText = current + increment;
+                        setTimeout(updateCount, 7);
+                    } else {
+                        counter.innerText = target; // Ensure it lands exactly
+                    }
+                };
+                updateCount();
+            });
+        }
+
+        // Animate when the page is fully loaded
+        window.addEventListener('DOMContentLoaded', animateCounters);
+    </script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <script>
+        var swiper = new Swiper(".swiper-container", {
+            loop: true,
+            slidesPerView: 1,
+            centeredSlides: false,
+            spaceBetween: 0,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+                type: "bullets"
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev"
+            }
+        });
+    </script>
+
+</body>
+<footer class="footer">
+    <div class="footer-container">
+
+        <!-- Left Section - Links -->
+        <div class="footer-links">
+            <h4>More Links</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="facilities.html">Facilities</a></li>
+                <li><a href="about.html">About us</a></li>
+                <li><a href="contact.html">Contact us</a></li>
+                <li><a href="#">Career</a></li>
+            </ul>
+        </div>
+
+        <!-- Center Section - Logo & Social -->
+        <div class="footer-branding">
+            <img src="img/logo.png" alt="Sports Club Logo" />
+            <h4>NSTE Tennis Academy</h4>
+            <!--
+      <div class="social-icons">
+        <a href="#"><img src="facebook-icon.png" alt="Facebook"></a>
+        <a href="#"><img src="instagram-icon.png" alt="Instagram"></a>
+      </div>-->
+        </div>
+
+        <!-- Right Section - About -->
+        <div class="footer-about">
+            <p>Your go-to platform for easy and seamless sports facility bookings, designed for everyone from casual
+                players to serious athletes.
+                <br><br>© 2024<br>NSTE<br>All Rights Reserved.
+            </p>
+        </div>
+
+    </div>
+</footer>
+
+</html>

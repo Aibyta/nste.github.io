@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Court Booking | NSTE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    .slot-btn {
+      min-width: 100px;
+      margin: 5px;
+    }
+    .selected-slot {
+      border: 3px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4">🎟 Book Your Court Easily</h2>
+
+    <!-- Current User and Friend Info -->
+    <div class="text-end mb-3">
+      <div id="userName" class="text-muted"></div>
+      <div id="friendInfo" class="text-info"></div>
+    </div>
+
+    <!-- Smart Feature Section -->
+    <div id="smartFeatures" class="alert alert-info text-center" style="display: none;">
+      <strong>🎯 Weekly Tips & Offers:</strong>
+      <ul id="smartFeatureList" class="mt-2 mb-0 text-start"></ul>
+    </div>
+
+    <div class="card p-4 shadow-sm mt-4">
+      <!-- Date Picker -->
+      <div class="mb-3">
+        <label for="date" class="form-label">📅 Select Date:</label>
+        <input type="date" id="date" class="form-control" onchange="loadSlotAvailability()" />
+      </div>
+
+      <!-- Slot Buttons -->
+      <div id="slotButtons" class="mb-3">
+        <label class="form-label">⏰ Available Time Slots:</label>
+        <div id="slotsContainer" class="d-flex flex-wrap"></div>
+      </div>
+
+      <button onclick="bookCourt()" class="btn btn-success w-100">📌 Book Now</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+      authDomain: "nste-booking-system.firebaseapp.com",
+      projectId: "nste-booking-system",
+      storageBucket: "nste-booking-system.appspot.com",
+      messagingSenderId: "574207536433",
+      appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let selectedSlot = null;
+    const allSlots = ["6-7 AM", "7-8 AM", "8-9 AM", "5-6 PM", "6-7 PM", "7-8 PM"];
+
+    let currentUser;
+    let friendId = null;
+    let friendName = "";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    friendId = urlParams.get("friendId");
+
+    auth.signInAnonymously().catch(console.error);
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return;
+
+      currentUser = user;
+      document.getElementById("userName").textContent = "👤 You are logged in";
+
+      if (friendId) {
+        const friendDoc = await db.collection("users").where("uid", "==", friendId).get();
+        if (!friendDoc.empty) {
+          friendName = friendDoc.docs[0].data().name;
+          document.getElementById("friendInfo").innerHTML = `<strong>Booking with:</strong> ${friendName}`;
+        }
+      }
+
+      // Smart Tips
+      db.collection("bookings")
+        .where("userId", "==", user.uid)
+        .get()
+        .then(snapshot => {
+          const bookings = snapshot.docs.map(doc => doc.data());
+          const featureList = document.getElementById("smartFeatureList");
+          const featureBox = document.getElementById("smartFeatures");
+          featureList.innerHTML = "";
+
+          let tips = [];
+
+          if (bookings.length === 0) {
+            tips.push("Get 10% off on your first court booking this week!");
+          } else if (bookings.length > 3) {
+            tips.push("You've booked 3+ times! Ask admin for loyalty rewards 🎁");
+          }
+
+          const today = new Date().getDay();
+          if (today === 5 || today === 6) {
+            tips.push("It's peak day! Book now to avoid slot rush ⏰");
+          }
+
+          tips.push("🏆 Don't miss our Sunday Doubles Tournament!");
+          tips.push("🟢 Green slots = Available! Book early for peace 🧘‍♀️");
+
+          tips.forEach(tip => {
+            const li = document.createElement("li");
+            li.textContent = tip;
+            featureList.appendChild(li);
+          });
+
+          if (tips.length > 0) {
+            featureBox.style.display = "block";
+          }
+        });
+    });
+
+    function loadSlotAvailability() {
+      const selectedDate = document.getElementById("date").value;
+      if (!selectedDate) return;
+
+      const container = document.getElementById("slotsContainer");
+      container.innerHTML = '<div class="text-muted">🔄 Loading...</div>';
+
+      db.collection("bookings")
+        .where("date", "==", selectedDate)
+        .get()
+        .then(snapshot => {
+          const slotCounts = {};
+          snapshot.docs.forEach(doc => {
+            const slot = doc.data().slot;
+            slotCounts[slot] = (slotCounts[slot] || 0) + 1;
+          });
+
+          container.innerHTML = "";
+          allSlots.forEach(slot => {
+            const count = slotCounts[slot] || 0;
+            let color = "btn-success"; // green
+            if (count === 2) color = "btn-warning"; // yellow
+            if (count >= 3) color = "btn-danger"; // red
+
+            const btn = document.createElement("button");
+            btn.className = `btn ${color} slot-btn`;
+            btn.innerText = `${slot} (${count}/3)`;
+            btn.disabled = count >= 3;
+            btn.onclick = () => {
+              document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected-slot"));
+              btn.classList.add("selected-slot");
+              selectedSlot = slot;
+            };
+
+            container.appendChild(btn);
+          });
+        });
+    }
+
+    function bookCourt() {
+      const date = document.getElementById("date").value;
+      if (!date || !selectedSlot) {
+        alert("Please select a date and available time slot.");
+        return;
+      }
+
+      const userId = auth.currentUser?.uid;
+      if (!userId) return alert("Not logged in");
+
+      db.collection("bookings").add({
+        userId: currentUser.uid,
+        friendId: friendId || null,
+        date,
+        slot: selectedSlot,
+        status: "pending",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert(friendId ? `Court booked with ${friendName}!` : "Court booked successfully!");
+        selectedSlot = null;
+        loadSlotAvailability();
+      })
+      .catch((error) => {
+        console.error("Booking failed: ", error);
+      });
+    }
+  </script>
+</body>
+</html>

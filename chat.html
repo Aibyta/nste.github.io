@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-2xl mx-auto bg-white rounded shadow p-4">
+    <h2 class="text-2xl font-bold mb-4"><a href="product.html">⬅</a>Order Chat</h2>
+    <div id="messages" class="space-y-2 h-64 overflow-y-auto mb-4 border p-2 rounded bg-gray-50"></div>
+    <div class="flex gap-2">
+      <input id="messageInput" class="flex-grow border p-2 rounded" placeholder="Type a message..." />
+      <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Send</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getFirestore, doc, addDoc, onSnapshot, collection,
+      serverTimestamp, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+            authDomain: "nste-booking-system.firebaseapp.com",
+            projectId: "nste-booking-system",
+            storageBucket: "nste-booking-system.appspot.com",
+            messagingSenderId: "574207536433",
+            appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get("orderId");
+    if (!orderId) {
+      alert("Missing orderId in URL");
+      throw new Error("Missing orderId");
+    }
+
+    const messagesDiv = document.getElementById("messages");
+    const input = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return alert("Login first");
+      currentUser = user;
+      listenToMessages();
+    });
+
+    function listenToMessages() {
+      const chatRef = collection(db, `chats/${orderId}/messages`);
+      const q = query(chatRef, orderBy("createdAt"));
+      onSnapshot(q, (snapshot) => {
+        messagesDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const align = msg.sender === currentUser.uid ? "text-right" : "text-left";
+          messagesDiv.innerHTML += `<div class="${align}"><span class="inline-block bg-blue-100 px-3 py-1 rounded">${msg.text}</span></div>`;
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+    }
+
+    sendBtn.onclick = async () => {
+      const text = input.value.trim();
+      if (!text) return;
+
+      await addDoc(collection(db, `chats/${orderId}/messages`), {
+        text,
+        sender: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+
+      input.value = "";
+    };
+  </script>
+</body>
+</html>
