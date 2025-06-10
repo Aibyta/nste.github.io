@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Facilities | NSTE</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+
+
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo">
+            NSTE Tennis Academy
+        </div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="facilities.html">Facilities</a>
+            <a href="about.html">About us</a>
+            <a href="contact.html">Contact us</a>
+        </nav>
+        <div class="auth-buttons">
+            <button onclick="window.location.href='sign-up.html';">Login/Sign up</button>
+        </div>
+    </header>
+    <section class="facilities-section">
+        <h2>Latest Sport Facilities</h2>
+        <input type="text" id="searchInput" placeholder="Search by name or category" onkeyup="filterFacilities()"
+            style="width: 100%; padding: 10px; font-size: 16px; margin: 20px auto; max-width: 500px; display: block; border-radius: 8px; border: 1px solid #ccc;" />
+
+        <div class="facilities-grid">
+            <!-- Facility Card Template -->
+            <div class="facility-card" data-category="tennis">
+                <img src="img/tennis.jpeg" alt="lawn" />
+                <h3>lawn</h3>
+                <p>Full-size indoor basketball court with hardwood flooring.</p>
+                <p class="price">$25 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+            <div class="facility-card" data-category="ball">
+                <img src="img/tennis.jpeg" alt="Tennis Court" />
+                <h3>Tennis Court</h3>
+                <p>A top-notch outdoor tennis court with a cushioned surface.</p>
+                <p class="price">$1 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+            <div class="facility-card" data-category="lawn">
+                <img src="img/tennis.jpeg" alt="Squash Court" />
+                <h3>Squash Court</h3>
+                <p>Indoor squash court with soundproof walls and flooring.</p>
+                <p class="price">$22 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+            <div class="facility-card" data-category="basketball">
+                <img src="img/tennis.jpeg" alt="Squash Court" />
+                <h3>Squash Court</h3>
+                <p>Indoor squash court with soundproof walls and flooring.</p>
+                <p class="price">$22 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+            <div class="facility-card" data-category="squash court">
+                <img src="img/tennis.jpeg" alt="Squash Court" />
+                <h3>Squash Court</h3>
+                <p>Indoor squash court with soundproof walls and flooring.</p>
+                <p class="price">$22 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+            <div class="facility-card" data-category="bat">
+                <img src="img/tennis.jpeg" alt="Squash Court" />
+                <h3>Squash Court</h3>
+                <p>Indoor squash court with soundproof walls and flooring.</p>
+                <p class="price">$22 <span>per hour</span></p>
+                <div class="card-buttons">
+                    <button>See Details</button>
+                    <button>Book facility</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <button id="scrollToTopBtn" title="Go to top">↑</button>
+    <script>
+        const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+        window.onscroll = function () {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollToTopBtn.classList.add("show");
+            } else {
+                scrollToTopBtn.classList.remove("show");
+            }
+        };
+
+        scrollToTopBtn.onclick = function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    </script>
+    <script>
+        function filterFacilities() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const cards = document.getElementsByClassName("facility-card");
+
+            for (let i = 0; i < cards.length; i++) {
+                const category = cards[i].getAttribute("data-category").toLowerCase();
+                const match = category.includes(input);
+
+                cards[i].style.display = match ? "block" : "none";
+            }
+        }
+    </script>
+
+</body>
+<footer class="footer">
+    <div class="footer-container">
+
+        <!-- Left Section - Links -->
+        <div class="footer-links">
+            <h4>More Links</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="facilities.html">Facilities</a></li>
+                <li><a href="about.html">About us</a></li>
+                <li><a href="contact.html">Contact us</a></li>
+                <li><a href="#">Career</a></li>
+            </ul>
+        </div>
+
+        <!-- Center Section - Logo & Social -->
+        <div class="footer-branding">
+            <img src="img/logo.png" alt="Sports Club Logo" />
+            <h4>NSTE Tennis Academy</h4>
+            <!--
+      <div class="social-icons">
+        <a href="#"><img src="facebook-icon.png" alt="Facebook"></a>
+        <a href="#"><img src="instagram-icon.png" alt="Instagram"></a>
+      </div>-->
+        </div>
+
+        <!-- Right Section - About -->
+        <div class="footer-about">
+            <p>Your go-to platform for easy and seamless sports facility bookings, designed for everyone from casual
+                players to serious athletes.
+                <br><br>© 2024<br>NSTE<br>All Rights Reserved.
+            </p>
+        </div>
+
+    </div>
+</footer>
+
+</html>
