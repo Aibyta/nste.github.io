@@ -759,7 +759,7 @@ nav a:hover::after {
     border: 1px solid #1e3a8a;
     border-radius: 8px;
     padding: 5px;
-    height: 200px;
+    height: 220px;
     transition: transform 0.3s ease;
     background-color: #fff;
 }
