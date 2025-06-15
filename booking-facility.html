@@ -47,6 +47,23 @@
         <div id="slotsContainer" class="d-flex flex-wrap"></div>
       </div>
 
+      <!-- Booking Add-ons -->
+      <div class="mb-3">
+        <label class="form-label">🎯 Add-ons (Optional):</label>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="withCoach">
+          <label class="form-check-label" for="withCoach">Book with a Coach</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="withEquipment">
+          <label class="form-check-label" for="withEquipment">Rent Equipment</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="withFnb">
+          <label class="form-check-label" for="withFnb">Include Food & Beverages</label>
+        </div>
+      </div>
+
       <button onclick="bookCourt()" class="btn btn-success w-100">📌 Book Now</button>
     </div>
   </div>
@@ -184,6 +201,9 @@
         date,
         slot: selectedSlot,
         status: "pending",
+        withCoach: document.getElementById("withCoach").checked,
+        withEquipment: document.getElementById("withEquipment").checked,
+        withFnb: document.getElementById("withFnb").checked,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       })
       .then(() => {
