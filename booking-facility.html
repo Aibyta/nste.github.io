@@ -268,7 +268,7 @@
     }
 
     function sendConfirmationEmail(name, email, date, slot) {
-      fetch("https://script.google.com/macros/s/AKfycbz-gFGyhNFHYoBFpRuxjDkB-FNg2RghZaJ0nTejvBl6eZoOIerhsWMCEInNVON05m2mtg/exec", {
+      fetch("https://nste-email-api.onrender.com/send-email", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, slot, date })
