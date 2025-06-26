@@ -2,71 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Court Booking | NSTE</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NSTE Court Booking</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/css/evo-calendar.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/css/evo-calendar.royal-navy.min.css" rel="stylesheet" />
+
   <style>
-    .slot-btn {
-      min-width: 100px;
-      margin: 5px;
-    }
-    .selected-slot {
-      border: 3px solid #000;
-    }
+    body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+    .container { max-width: 1000px; margin: 40px auto; }
+    #evoCalendar { border-radius: 15px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); }
+    #userName { position: absolute; top: 20px; left: 20px; font-weight: 600; }
+    #exportExcelBtn { float: right; display: none; margin-bottom: 10px; }
+    .slot-btn { margin: 8px; min-width: 140px; padding: 10px 14px; border-radius: 8px; font-weight: 500; color: white; border: none; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+    .btn-success { background-color: #28a745; }
+    .btn-warning { background-color: #ffc107; color: black; }
+    .btn-danger { background-color: #dc3545; }
+    .theme-toggle { position: absolute; top: 20px; right: 60px; font-size: 24px; background: none; border: none; }
   </style>
 </head>
+
 <body>
-  <div class="container py-5">
-    <h2 class="text-center mb-4">🎟 Book Your Court Easily</h2>
+  <button class="theme-toggle" id="toggleTheme">🌙</button>
+  <div id="userName">Loading...</div>
 
-    <!-- Current User and Friend Info -->
-    <div class="text-end mb-3">
-      <div id="userName" class="text-muted"></div>
-      <div id="friendInfo" class="text-info"></div>
-    </div>
+  <div class="container">
+    <h2 class="text-center mb-3">📅 NSTE Court Booking</h2>
+    <button class="btn btn-outline-primary" id="exportExcelBtn">📤 Export</button>
+    <div id="evoCalendar"></div>
 
-    <!-- Smart Feature Section -->
-    <div id="smartFeatures" class="alert alert-info text-center" style="display: none;">
-      <strong>🎯 Weekly Tips & Offers:</strong>
-      <ul id="smartFeatureList" class="mt-2 mb-0 text-start"></ul>
-    </div>
-
-    <div class="card p-4 shadow-sm mt-4">
-      <!-- Date Picker -->
-      <div class="mb-3">
-        <label for="date" class="form-label">📅 Select Date:</label>
-        <input type="date" id="date" class="form-control" onchange="loadSlotAvailability()" />
+    <div class="book-section text-center mt-4" id="bookingSection" style="display:none;">
+      <div class="card p-3 shadow-sm">
+        <h5>Select Slot for <span id="selectedDateText"></span></h5>
+        <div id="slotButtons" class="d-flex flex-wrap justify-content-center mt-3"></div>
       </div>
-
-      <!-- Slot Buttons -->
-      <div id="slotButtons" class="mb-3">
-        <label class="form-label">⏰ Available Time Slots:</label>
-        <div id="slotsContainer" class="d-flex flex-wrap"></div>
-      </div>
-
-      <!-- Booking Add-ons -->
-      <div class="mb-3">
-        <label class="form-label">🎯 Add-ons (Optional):</label>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="withCoach">
-          <label class="form-check-label" for="withCoach">Book with a Coach</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="withEquipment">
-          <label class="form-check-label" for="withEquipment">Rent Equipment</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="withFnb">
-          <label class="form-check-label" for="withFnb">Include Food & Beverages</label>
-        </div>
-      </div>
-
-      <button onclick="bookCourt()" class="btn btn-success w-100">📌 Book Now</button>
     </div>
   </div>
+
+  <!-- Snack & Coach Modal -->
+  <div class="modal fade" id="addonModal" tabindex="-1" aria-labelledby="addonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🍕 Add Snacks & 🧑‍🏫 Request Coach</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row">
+          <div class="col-md-6">
+            <h6>Snacks</h6>
+            <div class="d-flex flex-wrap gap-2" id="snackOptions"></div>
+          </div>
+          <div class="col-md-6">
+            <h6>Coach</h6>
+            <div id="coachOptions" class="d-flex flex-column gap-2"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmAddonsBtn">Confirm Add-ons</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/js/evo-calendar.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -82,138 +87,215 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let selectedSlot = null;
+    let currentUser = null;
+    let selectedDate = null;
+    let currentTheme = 'Royal Navy';
+    let selectedSlot = '';
     const allSlots = ["6-7 AM", "7-8 AM", "8-9 AM", "5-6 PM", "6-7 PM", "7-8 PM"];
+    const maxBookingsPerSlot = 3;
+    const bookings = {};
 
-    let currentUser;
-    let friendId = null;
-    let friendName = "";
+    const snacks = [
+      { name: "Energy Bar", price: 30, img: "https://th.bing.com/th/id/R.a5524818deefee0ca2355166a4824998?rik=hjEnbFIGQXfJuw&riu=http%3a%2f%2f3.bp.blogspot.com%2f-SOCfDEERGsU%2fT55MGhrTNBI%2fAAAAAAAAAYc%2fabgvNiwlqFU%2fs1600%2fhigh5.jpg&ehk=t7YM8g0L9K3nlPdbOlJ4ZDo6dILFgRQgP5PKSPEyIpM%3d&risl=&pid=ImgRaw&r=0" },
+      { name: "Banana", price: 15, img: "https://cdn.mos.cms.futurecdn.net/42E9as7NaTaAi4A6JcuFwG.jpg" },
+      { name: "Juice", price: 25, img: "https://th.bing.com/th/id/OIP.U2d2OLr22YAmNfBmkadJhAHaFb?r=0&rs=1&pid=ImgDetMain" }
+    ];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    friendId = urlParams.get("friendId");
+    const coaches = [
+      { name: "Coach Ravi", exp: "5 yrs", price: 100, img: "https://th.bing.com/th/id/OIP.q26MCmGFmZFZ9XficWR_VAHaHa?r=0&rs=1&pid=ImgDetMain" },
+      { name: "Coach Meena", exp: "3 yrs", price: 80, img: "https://th.bing.com/th/id/OIP.88AuOGRjwsnlkGn0sViTCQHaFK?r=0&o=7rm=3&rs=1&pid=ImgDetMain" }
+    ];
 
-    auth.signInAnonymously().catch(console.error);
+    $(document).ready(() => {
+      $('#evoCalendar').evoCalendar({ theme: currentTheme, calendarEvents: [], sidebarDisplayDefault: false });
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) return;
+      $('#toggleTheme').click(() => {
+        currentTheme = currentTheme === 'Royal Navy' ? 'Midnight Blue' : 'Royal Navy';
+        $('#toggleTheme').text(currentTheme === 'Royal Navy' ? '🌙' : '☀️');
+        $('#evoCalendar').evoCalendar('setTheme', currentTheme);
+      });
 
-      currentUser = user;
-      document.getElementById("userName").textContent = "👤 You are logged in";
+      $('#exportExcelBtn').click(exportToExcel);
 
-      if (friendId) {
-        const friendDoc = await db.collection("users").where("uid", "==", friendId).get();
-        if (!friendDoc.empty) {
-          friendName = friendDoc.docs[0].data().name;
-          document.getElementById("friendInfo").innerHTML = `<strong>Booking with:</strong> ${friendName}`;
+      auth.onAuthStateChanged(async user => {
+        if (!user) {
+          $('#userName').text("⚠️ Please log in");
+          alert("You must be logged in to book courts.");
+          return;
         }
-      }
 
-      // Smart Tips
-      db.collection("bookings")
-        .where("userId", "==", user.uid)
-        .get()
-        .then(snapshot => {
-          const bookings = snapshot.docs.map(doc => doc.data());
-          const featureList = document.getElementById("smartFeatureList");
-          const featureBox = document.getElementById("smartFeatures");
-          featureList.innerHTML = "";
+        currentUser = user;
+        const uid = user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+        const displayName = userDoc.exists ? userDoc.data().name || "Anonymous" : "Anonymous";
+        currentUser.displayName = displayName;
+        $('#userName').text(`Hello, ${displayName}`);
+        loadAllCalendarEvents();
+      });
 
-          let tips = [];
+      $('#evoCalendar').on('selectDate', async (_, newDate) => {
+        selectedDate = newDate;
+        $('#selectedDateText').text(newDate);
+        $('#bookingSection').fadeIn();
+        $('#exportExcelBtn').show();
 
-          if (bookings.length === 0) {
-            tips.push("Get 10% off on your first court booking this week!");
-          } else if (bookings.length > 3) {
-            tips.push("You've booked 3+ times! Ask admin for loyalty rewards 🎁");
-          }
+        const snapshot = await db.collection('bookings').where('date', '==', selectedDate).get();
+        bookings[selectedDate] = {};
+        snapshot.forEach(doc => {
+          const slot = doc.data().slot;
+          if (!bookings[selectedDate][slot]) bookings[selectedDate][slot] = 0;
+          bookings[selectedDate][slot]++;
+        });
+        renderSlotButtons();
+      });
 
-          const today = new Date().getDay();
-          if (today === 5 || today === 6) {
-            tips.push("It's peak day! Book now to avoid slot rush ⏰");
-          }
+      $('#confirmAddonsBtn').click(async () => {
+        const selectedSnacks = [];
+        $('.snack-check:checked').each(function () {
+          selectedSnacks.push(snacks[$(this).val()]);
+        });
 
-          tips.push("🏆 Don't miss our Sunday Doubles Tournament!");
-          tips.push("🟢 Green slots = Available! Book early for peace 🧘‍♀️");
+        const coachIndex = $('input[name="coach"]:checked').val();
+        const selectedCoach = coachIndex !== undefined ? coaches[coachIndex] : null;
 
-          tips.forEach(tip => {
-            const li = document.createElement("li");
-            li.textContent = tip;
-            featureList.appendChild(li);
-          });
-
-          if (tips.length > 0) {
-            featureBox.style.display = "block";
+        await db.collection('bookings').add({
+          date: selectedDate,
+          slot: selectedSlot,
+          userId: currentUser.uid,
+          userName: currentUser.displayName,
+          email: currentUser.email,
+          timestamp: new Date(),
+          addons: {
+            snacks: selectedSnacks,
+            coach: selectedCoach
           }
         });
+
+        $('#addonModal').modal('hide');
+        alert("✅ Add-ons saved!");
+        renderSlotButtons();
+      });
     });
 
-    function loadSlotAvailability() {
-      const selectedDate = document.getElementById("date").value;
-      if (!selectedDate) return;
+    async function loadAllCalendarEvents() {
+      const allBookings = await db.collection('bookings').get();
+      const events = [];
 
-      const container = document.getElementById("slotsContainer");
-      container.innerHTML = '<div class="text-muted">🔄 Loading...</div>';
-
-      db.collection("bookings")
-        .where("date", "==", selectedDate)
-        .get()
-        .then(snapshot => {
-          const slotCounts = {};
-          snapshot.docs.forEach(doc => {
-            const slot = doc.data().slot;
-            slotCounts[slot] = (slotCounts[slot] || 0) + 1;
-          });
-
-          container.innerHTML = "";
-          allSlots.forEach(slot => {
-            const count = slotCounts[slot] || 0;
-            let color = "btn-success"; // green
-            if (count === 2) color = "btn-warning"; // yellow
-            if (count >= 3) color = "btn-danger"; // red
-
-            const btn = document.createElement("button");
-            btn.className = `btn ${color} slot-btn`;
-            btn.innerText = `${slot} (${count}/3)`;
-            btn.disabled = count >= 3;
-            btn.onclick = () => {
-              document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected-slot"));
-              btn.classList.add("selected-slot");
-              selectedSlot = slot;
-            };
-
-            container.appendChild(btn);
-          });
-        });
-    }
-
-    function bookCourt() {
-      const date = document.getElementById("date").value;
-      if (!date || !selectedSlot) {
-        alert("Please select a date and available time slot.");
-        return;
+      for (const doc of allBookings.docs) {
+        const data = doc.data();
+        let userName = data.userName || "Anonymous";
+        if (!data.userName || userName === "Anonymous") {
+          const userDoc = await db.collection("users").doc(data.userId).get();
+          if (userDoc.exists) userName = userDoc.data().name || "Anonymous";
+        }
+        events.push({ id: doc.id, name: `Booked: ${data.slot}`, date: data.date, description: userName, type: 'event' });
       }
 
-      const userId = auth.currentUser?.uid;
-      if (!userId) return alert("Not logged in");
+      $('#evoCalendar').evoCalendar('addCalendarEvent', events);
+    }
 
-      db.collection("bookings").add({
-        userId: currentUser.uid,
-        friendId: friendId || null,
-        date,
-        slot: selectedSlot,
-        status: "pending",
-        withCoach: document.getElementById("withCoach").checked,
-        withEquipment: document.getElementById("withEquipment").checked,
-        withFnb: document.getElementById("withFnb").checked,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        alert(friendId ? `Court booked with ${friendName}!` : "Court booked successfully!");
-        selectedSlot = null;
-        loadSlotAvailability();
-      })
-      .catch((error) => {
-        console.error("Booking failed: ", error);
+    function renderSlotButtons() {
+      const container = $('#slotButtons');
+      container.empty();
+
+      allSlots.forEach(slot => {
+        const count = bookings[selectedDate]?.[slot] || 0;
+        let color = count === 2 ? 'btn-warning' : (count >= 3 ? 'btn-danger' : 'btn-success');
+
+        const btn = $(`<button class="slot-btn ${color}">${slot} (${count}/${maxBookingsPerSlot})</button>`);
+        btn.prop('disabled', count >= maxBookingsPerSlot);
+        btn.click(() => bookSlot(slot));
+        container.append(btn);
       });
+    }
+
+    async function bookSlot(slot) {
+      selectedSlot = slot;
+      const name = currentUser.displayName;
+      const email = currentUser.email;
+
+      await db.collection('bookings').add({
+        date: selectedDate,
+        slot,
+        userId: currentUser.uid,
+        userName: name,
+        email,
+        timestamp: new Date()
+      });
+
+      sendConfirmationEmail(name, email, selectedDate, slot);
+
+      bookings[selectedDate][slot] = (bookings[selectedDate][slot] || 0) + 1;
+      $('#evoCalendar').evoCalendar('addCalendarEvent', {
+        id: 'book-' + Date.now(),
+        name: `Booked: ${slot}`,
+        date: selectedDate,
+        description: name,
+        type: 'event'
+      });
+
+      $('#addonModal').modal('show');
+      renderSnackOptions();
+      renderCoachOptions();
+    }
+
+    function renderSnackOptions() {
+      const container = $('#snackOptions').empty();
+      snacks.forEach((s, i) => {
+        container.append(`
+          <div class="card p-2" style="width: 100px;">
+            <img src="${s.img}" class="card-img-top rounded" alt="${s.name}">
+            <div class="card-body p-1 text-center">
+              <small>${s.name}<br>RM${s.price}</small><br>
+              <input type="checkbox" class="snack-check" value="${i}">
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function renderCoachOptions() {
+      const container = $('#coachOptions').empty();
+      coaches.forEach((c, i) => {
+        container.append(`
+          <label class="card p-2 d-flex align-items-center gap-2">
+            <input type="radio" name="coach" value="${i}">
+            <img src="${c.img}" style="width: 40px;" class="rounded">
+            <div><strong>${c.name}</strong><br><small>${c.exp}, RM${c.price}</small></div>
+          </label>
+        `);
+      });
+    }
+
+    function sendConfirmationEmail(name, email, date, slot) {
+      fetch("https://script.google.com/macros/s/AKfycbz-gFGyhNFHYoBFpRuxjDkB-FNg2RghZaJ0nTejvBl6eZoOIerhsWMCEInNVON05m2mtg/exec", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, slot, date })
+      })
+        .then(res => res.text())
+        .then(msg => console.log("Email response:", msg))
+        .catch(err => console.error("Email error:", err));
+    }
+
+    async function exportToExcel() {
+      const snapshot = await db.collection('bookings').where('date', '==', selectedDate).get();
+      const data = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        data.push({
+          Date: d.date,
+          Slot: d.slot,
+          User: d.userName,
+          Email: d.email,
+          Time: d.timestamp.toDate().toLocaleString()
+        });
+      });
+
+      const sheet = XLSX.utils.json_to_sheet(data);
+      const book = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(book, sheet, "Bookings");
+      XLSX.writeFile(book, `Bookings-${selectedDate}.xlsx`);
     }
   </script>
 </body>
