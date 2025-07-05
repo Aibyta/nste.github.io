@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community | NSTE Tennis Academy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-dark: #1e40af;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --dark: #1f2937;
+      --light: #f9fafb;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 140px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      clip-path: ellipse(100% 80% at 50% 20%);
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');
+    }
+
+    .hero h1 {
+      font-size: 3.8rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      line-height: 1.2;
+    }
+    
+    .hero p.lead {
+      font-size: 1.5rem;
+      max-width: 700px;
+      margin: 0 auto 2.5rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .hero-btn {
+      background: white;
+      color: var(--primary);
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 50px;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      border: 2px solid white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      color: var(--primary);
+    }
+    
+    .hero-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    .hero-btn:hover::after {
+      transform: translateX(100%);
+    }
+
+    /* Features Section */
+    .features {
+      padding: 100px 0;
+      background: white;
+      position: relative;
+    }
+    
+    .features::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M1200 120L0 16.48 0 0 1200 0 1200 120z" fill="%23f9fafb"></path></svg>');
+      background-size: cover;
+      z-index: 1;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .section-title {
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      position: relative;
+      display: inline-block;
+      color: var(--dark);
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    
+    .section-subtitle {
+      font-size: 1.2rem;
+      color: #6b7280;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      height: 100%;
+      border: 1px solid rgba(0,0,0,0.03);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    }
+    
+    .feature-card:hover::before {
+      opacity: 0.03;
+    }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(45deg, var(--primary), var(--primary-light));
+      color: white;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.8rem;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+    
+    .feature-card h5 {
+      font-weight: 600;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      color: var(--dark);
+    }
+    
+    .feature-card p {
+      color: #6b7280;
+    }
+
+    /* Testimonials */
+    .testimonials {
+      padding: 100px 0;
+      background: var(--light);
+      position: relative;
+    }
+    
+    .testimonial-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+      transition: all 0.4s ease;
+      height: 100%;
+      position: relative;
+    }
+    
+    .testimonial-card::before {
+      content: '"';
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 5rem;
+      color: var(--primary);
+      opacity: 0.1;
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .testimonial-author img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 15px;
+      border: 3px solid var(--primary-light);
+    }
+    
+    .testimonial-author h6 {
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+    
+    .testimonial-author p {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 0;
+    }
+
+    .testimonial-text {
+      position: relative;
+      z-index: 1;
+      font-style: italic;
+      color: #4b5563;
+    }
+    
+    .rating {
+      color: var(--accent);
+      margin-top: 15px;
+    }
+
+    /* Stats */
+    .stats {
+      padding: 80px 0;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      text-align: center;
+    }
+    
+    .stat-item {
+      padding: 30px;
+    }
+    
+    .stat-number {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+    
+    .stat-label {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    /* CTA */
+    .cta {
+      padding: 120px 0;
+      background: var(--light);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgzNyw5OSwyMzUsMC4wMykiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IGZpbGw9InVybCgjcGF0dGVybikiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4=');
+    }
+
+    .cta h2 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--dark);
+    }
+    
+    .cta p {
+      font-size: 1.3rem;
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      color: #6b7280;
+    }
+
+    .cta-btn {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      padding: 16px 40px;
+      border-radius: 50px;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      border: none;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+      color: white;
+    }
+    
+    .cta-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    .cta-btn:hover::after {
+      transform: translateX(100%);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark);
+      color: #d1d5db;
+      padding: 60px 0 30px;
+    }
+    
+    .footer-logo {
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+    
+    .footer-logo img {
+      height: 40px;
+    }
+    
+    .footer-about {
+      margin-bottom: 30px;
+    }
+    
+    .footer-title {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+    
+    .footer-links {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    
+    .footer-links a {
+      color: #d1d5db;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .social-links a:hover {
+      background: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    .copyright {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 30px;
+      margin-top: 50px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+
+    /* Animations */
+    [data-aos] {
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    
+    [data-aos="fade-up"] {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    
+    [data-aos="fade-up"].aos-animate {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    [data-aos="fade-in"] {
+      opacity: 0;
+    }
+    
+    [data-aos="fade-in"].aos-animate {
+      opacity: 1;
+    }
+    
+    .delay-1 {
+      transition-delay: 0.2s;
+    }
+    
+    .delay-2 {
+      transition-delay: 0.4s;
+    }
+    
+    .delay-3 {
+      transition-delay: 0.6s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="animate__animated animate__fadeInDown" data-aos="fade-up">Elevate Your Tennis Experience</h1>
+      <p class="lead animate__animated animate__fadeIn animate__delay-1s" data-aos="fade-up" data-aos-delay="200">The smartest way to book courts, find players, and improve your game</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="#features" class="btn hero-btn animate__animated animate__fadeInUp animate__delay-2s" data-aos="fade-up" data-aos-delay="400">
+          <i class="fas fa-arrow-down me-2"></i> Explore Features
+        </a>
+        <a href="sign-up.html" class="btn btn-outline-light animate__animated animate__fadeInUp animate__delay-3s" data-aos="fade-up" data-aos-delay="600">
+          <i class="fas fa-user-plus me-2"></i> Join Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header" data-aos="fade-in">
+        <h2 class="section-title">Why Players Love NSTE</h2>
+        <p class="section-subtitle">Revolutionizing tennis through technology and community</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4" data-aos="fade-up">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-robot"></i>
+            </div>
+            <h5>AI-Powered Matching</h5>
+            <p>Our intelligent system analyzes your playing style and preferences to connect you with ideal partners and suggest perfect time slots.</p>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h5>Community Network</h5>
+            <p>Join thousands of local players, find friends with similar schedules, and never play alone unless you want to.</p>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <h5>Smart Scheduling</h5>
+            <p>Get personalized recommendations based on your calendar, weather conditions, and court availability.</p>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h5>Performance Tracking</h5>
+            <p>Monitor your progress with detailed stats, match history, and personalized improvement suggestions.</p>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <h5>Tournaments & Events</h5>
+            <p>Discover local competitions, club events, and social matches tailored to your skill level.</p>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h5>Instant Notifications</h5>
+            <p>Real-time alerts for court openings, partner responses, and last-minute game opportunities.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header" data-aos="fade-in">
+        <h2 class="section-title">Our Community Speaks</h2>
+        <p class="section-subtitle">Join thousands of satisfied players who transformed their tennis experience</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4" data-aos="fade-up">
+          <div class="testimonial-card">
+            <div class="testimonial-author">
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Rajesh K.">
+              <div>
+                <h6>Rajesh K.</h6>
+                <p>Competitive Player</p>
+              </div>
+            </div>
+            <div class="testimonial-text">
+              <p>"Since joining NSTE, I've doubled my match play. The AI suggestions are scarily accurate - it knows when I'm free before I do!"</p>
+            </div>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <div class="testimonial-card">
+            <div class="testimonial-author">
+              <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Priya M.">
+              <div>
+                <h6>Priya M.</h6>
+                <p>Club Coach</p>
+              </div>
+            </div>
+            <div class="testimonial-text">
+              <p>"Coordinating group sessions used to take hours. Now with NSTE, I can organize matches for my students in minutes."</p>
+            </div>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="testimonial-card">
+            <div class="testimonial-author">
+              <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Arjun S.">
+              <div>
+                <h6>Arjun S.</h6>
+                <p>College Team Captain</p>
+              </div>
+            </div>
+            <div class="testimonial-text">
+              <p>"The tournament notifications are spot on. I've discovered new competitions and met players at my level through the app."</p>
+            </div>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3" data-aos="fade-up">
+          <div class="stat-item">
+            <div class="stat-number">5,000+</div>
+            <div class="stat-label">Active Players</div>
+          </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+          <div class="stat-item">
+            <div class="stat-number">15K+</div>
+            <div class="stat-label">Monthly Matches</div>
+          </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+          <div class="stat-item">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Satisfaction</div>
+          </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+          <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2 data-aos="fade-up">Ready to Transform Your Tennis Game?</h2>
+      <p data-aos="fade-up" data-aos-delay="100">Join the most innovative tennis community today</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="sign-up.html" class="btn cta-btn" data-aos="fade-up" data-aos-delay="200">
+          <i class="fas fa-user-plus me-2"></i> Sign Up Free
+        </a>
+        <a href="tour.html" class="btn btn-outline-primary" data-aos="fade-up" data-aos-delay="300">
+          <i class="fas fa-play-circle me-2"></i> Watch Demo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4" data-aos="fade-up">
+          <div class="footer-about">
+            <div class="footer-logo">
+              <img src="https://via.placeholder.com/150x50?text=NSTE+Logo" alt="NSTE Logo">
+            </div>
+            <p>The most innovative tennis booking platform, combining AI technology with a vibrant community of players.</p>
+            <div class="social-links">
+              <a href="#"><i class="fab fa-facebook-f"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4" data-aos="fade-up" data-aos-delay="100">
+          <h4 class="footer-title">Features</h4>
+          <ul class="footer-links">
+            <li><a href="#">Court Booking</a></li>
+            <li><a href="#">Player Matching</a></li>
+            <li><a href="#">Tournaments</a></li>
+            <li><a href="#">Performance Tracking</a></li>
+            <li><a href="#">Mobile App</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-4" data-aos="fade-up" data-aos-delay="200">
+          <h4 class="footer-title">Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Partners</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-4" data-aos="fade-up" data-aos-delay="300">
+          <h4 class="footer-title">Support</h4>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">FAQs</a></li>
+            <li><a href="#">Safety</a></li>
+            <li><a href="#">Feedback</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2" data-aos="fade-up" data-aos-delay="400">
+          <h4 class="footer-title">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">Copyright</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2025 NSTE Tennis Academy. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Simple scroll animation implementation
+    document.addEventListener('DOMContentLoaded', function() {
+      const aosElements = document.querySelectorAll('[data-aos]');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('aos-animate');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+      });
+
+      aosElements.forEach(element => {
+        observer.observe(element);
+      });
+      
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tennis Court Bookings</title>
+  <link href="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/css/evo-calendar.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      padding: 20px;
+    }
+    .calendar-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .loading-spinner {
+      display: block;
+      margin: 20px auto;
+      width: 3rem;
+      height: 3rem;
+    }
+    .auth-container {
+      text-align: center;
+      margin-top: 50px;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar-container">
+    <h1>My Tennis Court Bookings</h1>
+    
+    <div id="loading" class="text-center" style="display: none;">
+      <div class="spinner-border text-primary loading-spinner" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p>Loading your bookings...</p>
+    </div>
+    
+    <div id="errorDisplay" class="alert alert-danger" style="display: none;"></div>
+    
+    <div id="calendarSection">
+      <div id="evoCalendar"></div>
+      <div id="noBookings" class="alert alert-info" style="display: none;">
+        You don't have any bookings yet.
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/js/evo-calendar.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+      authDomain: "nste-booking-system.firebaseapp.com",
+      projectId: "nste-booking-system",
+      storageBucket: "nste-booking-system.appspot.com",
+      messagingSenderId: "574207536433",
+      appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    // Initialize Firebase
+    let db, auth;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+      console.log("Firebase initialized successfully");
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+      showError("Failed to initialize Firebase. Check console for details.");
+    }
+
+    // Initialize EvoCalendar
+    $(document).ready(function() {
+      $('#evoCalendar').evoCalendar({
+        theme: 'Royal Navy',
+        calendarEvents: [],
+        sidebarDisplayDefault: false,
+        todayHighlight: true
+      });
+      
+      // Auth state listener
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          // User is signed in
+          showUserInfo(user);
+          loadUserBookings(user.uid);
+        } else {
+          // No user signed in
+          showAuthUI();
+        }
+      });
+      
+      // Sign in button
+      $('#signInBtn').click(() => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+          .catch(error => {
+            console.error("Sign in error:", error);
+            showError("Failed to sign in. Please try again.");
+          });
+      });
+      
+      // Sign out button
+      $('#signOutBtn').click(() => {
+        auth.signOut()
+          .catch(error => {
+            console.error("Sign out error:", error);
+            showError("Failed to sign out. Please try again.");
+          });
+      });
+    });
+
+    async function loadUserBookings(userId) {
+      try {
+        showLoading();
+        hideError();
+        $('#noBookings').hide();
+        
+        const snapshot = await db.collection('bookings')
+          .where('type', '==', 'tennis')
+          .where('userId', '==', userId)
+          .orderBy('timestamp', 'desc')
+          .get();
+        
+        console.log(`Found ${snapshot.size} bookings for user ${userId}`);
+        
+        const events = [];
+        snapshot.forEach(doc => {
+          try {
+            const booking = doc.data();
+            console.log("Processing booking:", doc.id, booking);
+            
+            // Convert Firestore Timestamp to Date if needed
+            const bookingDate = booking.timestamp?.toDate 
+              ? formatDate(booking.timestamp.toDate()) 
+              : booking.date;
+            
+            const event = {
+              id: doc.id,
+              name: `${booking.facilityName} - ${booking.slot}`,
+              date: bookingDate,
+              description: generateBookingDescription(booking),
+              type: getEventType(booking.status),
+              everyYear: false,
+              bookingData: booking
+            };
+            
+            events.push(event);
+          } catch (docError) {
+            console.error(`Error processing document ${doc.id}:`, docError);
+          }
+        });
+        
+        if (events.length === 0) {
+          $('#noBookings').show();
+        } else {
+          $('#evoCalendar').evoCalendar('addCalendarEvent', events);
+        }
+        
+        hideLoading();
+      } catch (error) {
+        console.error("Error loading bookings:", error);
+        showError("Failed to load your bookings. Please try again.");
+        hideLoading();
+      }
+    }
+
+    // Helper functions
+    function formatDate(date) {
+      if (!(date instanceof Date)) date = new Date(date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${month}/${day}/${year}`;
+    }
+
+    function generateBookingDescription(booking) {
+      let desc = `Time: ${booking.slot || 'N/A'}\n`;
+      desc += `Facility: ${booking.facilityName || 'N/A'}\n`;
+      desc += `Status: ${booking.status || 'confirmed'}\n`;
+      
+      if (booking.friendName) {
+        desc += `Playing with: ${booking.friendName}\n`;
+      }
+      
+      desc += `Total: RM${booking.totalAmount?.toFixed(2) || booking.price?.toFixed(2) || '0.00'}`;
+      
+      return desc;
+    }
+
+    function getEventType(status) {
+      switch ((status || '').toLowerCase()) {
+        case 'confirmed': return 'event-confirmed';
+        case 'pending': return 'event-pending';
+        case 'cancelled': return 'event-cancelled';
+        default: return 'event-confirmed';
+      }
+    }
+
+    function showUserInfo(user) {
+      $('#authContainer').hide();
+      $('#userInfo').show();
+      $('#userEmail').text(user.email);
+      $('#calendarSection').show();
+    }
+
+    function showAuthUI() {
+      $('#userInfo').hide();
+      $('#authContainer').show();
+      $('#calendarSection').hide();
+      $('#evoCalendar').evoCalendar('addCalendarEvent', []);
+    }
+
+    function showLoading() {
+      $('#loading').show();
+    }
+
+    function hideLoading() {
+      $('#loading').hide();
+    }
+
+    function showError(message) {
+      $('#errorDisplay').text(message).show();
+    }
+
+    function hideError() {
+      $('#errorDisplay').hide();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | NSTE Tennis Partners</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .signup-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .logo img {
+            height: 80px;
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #007bff;
+        }
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .skill-level-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .skill-level-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .skill-level-btn:hover {
+            background-color: #f8f9fa;
+        }
+        .skill-level-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .availability-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .availability-tag {
+            padding: 0.3rem 0.8rem;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .availability-tag:hover {
+            background-color: #dee2e6;
+        }
+        .availability-tag.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .btn-signup {
+            background-color: #28a745;
+            border-color: #28a745;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .profile-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #dee2e6;
+            margin-bottom: 1rem;
+        }
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 10px;
+        }
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .step.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .step.completed {
+            background-color: #28a745;
+            color: white;
+        }
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        .btn-next {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-prev {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="logo">
+            <a href="index.html"><img src="img/logo.png" alt="NSTE Tennis"></a>
+        </div>
+        
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1-indicator">1</div>
+            <div class="step" id="step2-indicator">2</div>
+            <div class="step" id="step3-indicator">3</div>
+        </div>
+        
+        <form id="signupForm">
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" id="step1">
+                <h2 class="form-title">Basic Information</h2>
+                
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="firstName" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-next" onclick="nextStep(1)">Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Tennis Profile -->
+            <div class="form-step" id="step2">
+                <h2 class="form-title">Tennis Profile</h2>
+                
+                <div class="mb-3">
+                    <label for="profileUrl" class="form-label">Profile Picture URL</label>
+                    <input type="url" class="form-control" id="profileUrl" placeholder="https://example.com/your-picture.jpg">
+                    <small class="text-muted">Paste a link to your profile picture</small>
+                    <img id="profilePreview" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png" class="profile-preview">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Skill Level</label>
+                    <div class="skill-level-options">
+                        <div class="skill-level-btn" data-level="beginner" onclick="selectSkillLevel(this)">
+                            Beginner
+                        </div>
+                        <div class="skill-level-btn" data-level="intermediate" onclick="selectSkillLevel(this)">
+                            Intermediate
+                        </div>
+                        <div class="skill-level-btn" data-level="advanced" onclick="selectSkillLevel(this)">
+                            Advanced
+                        </div>
+                    </div>
+                    <input type="hidden" id="skillLevel" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="location" class="form-label">Preferred Location</label>
+                    <select class="form-select" id="location" required>
+                        <option value="" selected disabled>Select your location</option>
+                        <option value="North">North</option>
+                        <option value="South">South</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                        <option value="Central">Central</option>
+                    </select>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Previous</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep(2)">Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Availability -->
+            <div class="form-step" id="step3">
+                <h2 class="form-title">Playing Availability</h2>
+                
+                <div class="mb-3">
+                    <label class="form-label">Playing Frequency</label>
+                    <select class="form-select" id="playingFrequency" required>
+                        <option value="" selected disabled>How often do you play?</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Bi-weekly">Bi-weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Occasionally">Occasionally</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Preferred Playing Times</label>
+                    <p class="text-muted mb-3">Select all time slots you're typically available</p>
+                    
+                    <div class="availability-options">
+                        <div class="availability-tag" data-time="Weekday Mornings" onclick="toggleAvailability(this)">Weekday Mornings</div>
+                        <div class="availability-tag" data-time="Weekday Afternoons" onclick="toggleAvailability(this)">Weekday Afternoons</div>
+                        <div class="availability-tag" data-time="Weekday Evenings" onclick="toggleAvailability(this)">Weekday Evenings</div>
+                        <div class="availability-tag" data-time="Weekend Mornings" onclick="toggleAvailability(this)">Weekend Mornings</div>
+                        <div class="availability-tag" data-time="Weekend Afternoons" onclick="toggleAvailability(this)">Weekend Afternoons</div>
+                        <div class="availability-tag" data-time="Weekend Evenings" onclick="toggleAvailability(this)">Weekend Evenings</div>
+                    </div>
+                    <input type="hidden" id="preferredTimes" required>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(3)"><i class="bi bi-arrow-left"></i> Previous</button>
+                    <button type="submit" class="btn btn-signup">
+                        <i class="bi bi-person-plus"></i> Complete Sign Up
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="login.html" class="text-primary">Log In</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+            authDomain: "nste-booking-system.firebaseapp.com",
+            projectId: "nste-booking-system",
+            storageBucket: "nste-booking-system.appspot.com",
+            messagingSenderId: "574207536433",
+            appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Profile picture URL preview
+        document.getElementById('profileUrl').addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            if (url) {
+                document.getElementById('profilePreview').src = url;
+            } else {
+                document.getElementById('profilePreview').src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
+            }
+        });
+
+        // Skill level selection
+        function selectSkillLevel(element) {
+            document.querySelectorAll('.skill-level-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            element.classList.add('active');
+            document.getElementById('skillLevel').value = element.dataset.level;
+        }
+
+        // Availability selection
+        function toggleAvailability(element) {
+            element.classList.toggle('selected');
+            updatePreferredTimes();
+        }
+
+        function updatePreferredTimes() {
+            const selectedTimes = Array.from(document.querySelectorAll('.availability-tag.selected'))
+                .map(el => el.dataset.time);
+            document.getElementById('preferredTimes').value = JSON.stringify(selectedTimes);
+        }
+
+        // Multi-step form navigation
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function nextStep(current) {
+            if (validateStep(current)) {
+                document.getElementById(`step${current}`).classList.remove('active');
+                document.getElementById(`step${current+1}`).classList.add('active');
+                document.getElementById(`step${current}-indicator`).classList.remove('active');
+                document.getElementById(`step${current}-indicator`).classList.add('completed');
+                document.getElementById(`step${current+1}-indicator`).classList.add('active');
+                currentStep = current + 1;
+            }
+        }
+
+        function prevStep(current) {
+            document.getElementById(`step${current}`).classList.remove('active');
+            document.getElementById(`step${current-1}`).classList.add('active');
+            document.getElementById(`step${current}-indicator`).classList.remove('active');
+            document.getElementById(`step${current-1}-indicator`).classList.add('active');
+            currentStep = current - 1;
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const firstName = document.getElementById("firstName").value;
+                const lastName = document.getElementById("lastName").value;
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+                
+                if (!firstName || !lastName || !email || !password) {
+                    alert("Please fill in all required fields");
+                    return false;
+                }
+                return true;
+            } else if (step === 2) {
+                const skillLevel = document.getElementById("skillLevel").value;
+                const location = document.getElementById("location").value;
+                
+                if (!skillLevel || !location) {
+                    alert("Please select your skill level and preferred location");
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        }
+
+        // Form submission
+        document.getElementById("signupForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Get form values
+            const firstName = document.getElementById("firstName").value;
+            const lastName = document.getElementById("lastName").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const phone = document.getElementById("phone").value;
+            const profileUrl = document.getElementById("profileUrl").value || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
+            const skillLevel = document.getElementById("skillLevel").value;
+            const location = document.getElementById("location").value;
+            const playingFrequency = document.getElementById("playingFrequency").value;
+            const preferredTimes = JSON.parse(document.getElementById("preferredTimes").value || '[]');
+
+            // Create user account
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Save user data to Firestore
+                    return db.collection("users").doc(user.uid).set({
+                        uid: user.uid,
+                        name: `${firstName} ${lastName}`,
+                        email: email,
+                        phone: phone,
+                        photoURL: profileUrl,
+                        skillLevel: skillLevel,
+                        location: location,
+                        playingFrequency: playingFrequency,
+                        preferredTimes: preferredTimes,
+                        role: "user",
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    alert("Account created successfully!");
+                    window.location.href = "user-dashboard.html";
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                    console.error(error);
+                });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

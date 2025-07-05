@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Booking Management | NSTE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+    }
+    
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+    
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      border-bottom: none;
+    }
+    
+    .status-badge {
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    
+    .approved {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .rejected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .action-btn {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
+    }
+    
+    .empty-state {
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #dee2e6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="mb-0"><i class="bi bi-calendar-check me-2"></i> Booking Management</h2>
+            <p class="text-muted mb-0">Manage all facility bookings</p>
+          </div>
+          <div class="d-flex">
+            <div class="input-group" style="width: 250px;">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search bookings..." id="searchInput">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body p-0">
+        <div id="loading" class="text-center my-5 py-5">
+          <div class="spinner-border text-primary loading-spinner" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Loading bookings...</p>
+        </div>
+        
+        <div class="table-responsive" id="bookingsTable" style="display:none;">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Facility</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsBody"></tbody>
+          </table>
+          
+          <div id="emptyState" class="empty-state d-none">
+            <i class="bi bi-calendar-x"></i>
+            <h4>No bookings found</h4>
+            <p class="text-muted">There are currently no bookings to display</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+      authDomain: "nste-booking-system.firebaseapp.com",
+      projectId: "nste-booking-system",
+      storageBucket: "nste-booking-system.appspot.com",
+      messagingSenderId: "574207536433",
+      appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const bookingsBody = document.getElementById("bookingsBody");
+    const bookingsTable = document.getElementById("bookingsTable");
+    const loadingDiv = document.getElementById("loading");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+
+    function createStatusBadge(status) {
+      const span = document.createElement("span");
+      span.classList.add("badge", "status-badge");
+      
+      if (status === "approved") span.classList.add("approved");
+      else if (status === "pending") span.classList.add("pending");
+      else if (status === "rejected") span.classList.add("rejected");
+      
+      // Add icon based on status
+      let iconClass = "";
+      if (status === "approved") iconClass = "bi-check-circle";
+      else if (status === "pending") iconClass = "bi-hourglass";
+      else if (status === "rejected") iconClass = "bi-x-circle";
+      
+      span.innerHTML = `<i class="bi ${iconClass} me-1"></i> ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+      return span;
+    }
+
+    function showToast(type, message) {
+      const toast = document.createElement('div');
+      toast.classList.add('toast', 'align-items-center', 'text-white', 'bg-'+type, 'border-0');
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2"></i>
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const toastContainer = document.getElementById('toastContainer');
+      toastContainer.appendChild(toast);
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    }
+
+    function renderBookings(bookings) {
+      bookingsBody.innerHTML = "";
+      
+      if (bookings.length === 0) {
+        emptyState.classList.remove("d-none");
+        return;
+      }
+      
+      emptyState.classList.add("d-none");
+
+      bookings.forEach(({ id, data }) => {
+        const tr = document.createElement("tr");
+        
+        // Format date
+        const bookingDate = new Date(data.date);
+        const formattedDate = bookingDate.toLocaleDateString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        
+        // User info with avatar
+        const userAvatar = data.userPhotoURL ? 
+          `<img src="${data.userPhotoURL}" class="user-avatar" alt="${data.userName}">` :
+          `<div class="user-avatar bg-secondary d-flex align-items-center justify-content-center text-white">
+            <i class="bi bi-person"></i>
+          </div>`;
+          
+        const userName = data.userName || "Unknown User";
+        const friendInfo = data.friendName ? 
+          `<div class="text-muted small mt-1">With: ${data.friendName}</div>` : "";
+
+        tr.innerHTML = `
+          <td>
+            <div class="d-flex align-items-center">
+              ${userAvatar}
+              <div>
+                <div>${userName}</div>
+                ${friendInfo}
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="fw-medium">${data.facilityName || 'Court'}</div>
+            <div class="text-muted small">RM${data.price || '0'}</div>
+          </td>
+          <td>${formattedDate}</td>
+          <td>
+            <span class="badge bg-light text-dark">${data.slot}</span>
+          </td>
+          <td>${createStatusBadge(data.status).outerHTML}</td>
+        `;
+
+        bookingsBody.appendChild(tr);
+      });
+    }
+
+    async function fetchBookings() {
+      loadingDiv.style.display = "block";
+      bookingsTable.style.display = "none";
+      
+      try {
+        const snapshot = await db.collection("bookings")
+          .orderBy("timestamp", "desc")
+          .get();
+
+        const bookings = [];
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          bookings.push({ id: doc.id, data });
+        }
+
+        renderBookings(bookings);
+        loadingDiv.style.display = "none";
+        bookingsTable.style.display = "block";
+
+      } catch (error) {
+        console.error("Error loading bookings:", error);
+        showToast('danger', 'Failed to load bookings');
+        loadingDiv.style.display = "none";
+      }
+    }
+
+    // Initialize search functionality
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = bookingsBody.querySelectorAll('tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+      
+      // Show empty state if no results
+      const visibleRows = [...rows].filter(row => row.style.display !== 'none');
+      if (visibleRows.length === 0) {
+        emptyState.classList.remove('d-none');
+      } else {
+        emptyState.classList.add('d-none');
+      }
+    });
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "/admin-login.html";
+        return;
+      }
+      fetchBookings();
+    });
+
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  </script>
+
+  <!-- Toast container -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="toastContainer"></div>
+  </div>
+
+  <!-- Loading toast (hidden by default) -->
+  <div class="toast align-items-center text-white bg-primary border-0" id="loadingToast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-hourglass me-2"></i> Processing request...
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

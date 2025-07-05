@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sports Equipment Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8fafc;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .status-pending {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+    .status-completed {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+    .status-cancelled {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    .contact-info {
+      background-color: #f3f4f6;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .required-field:after {
+      content: " *";
+      color: red;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">Sports Equipment Marketplace</h1>
+      <p class="text-gray-600">Buy and sell quality sports gear with fellow players</p>
+    </header>
+
+    <!-- Upload Section -->
+    <section class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-cloud-upload-alt mr-2 text-blue-500"></i> List Your Equipment
+      </h2>
+      <div class="grid md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1 required-field">Item Name</label>
+          <input id="name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tennis Racket" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1 required-field">Category</label>
+          <input id="type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Racket, Shoes" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1 required-field">Image URL</label>
+          <input id="image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://example.com/image.jpg" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1 required-field">Contact Phone</label>
+          <input id="phone" type="tel" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="+1234567890" required />
+        </div>
+        <div class="md:col-span-4 flex items-end">
+          <button id="uploadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+            <i class="fas fa-plus mr-2"></i> List Item
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Section -->
+    <section class="mb-8">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-clipboard-list mr-2 text-blue-500"></i> Your Orders
+      </h2>
+      <div id="orders" class="grid md:grid-cols-2 gap-6">
+        <!-- Orders will be loaded here -->
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p>Loading your orders...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marketplace Section -->
+    <section>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-store mr-2 text-blue-500"></i> Available Equipment
+      </h2>
+      <div id="productList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Products will be loaded here -->
+        <div class="text-center py-12 text-gray-500">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p>Loading products...</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, where,
+      serverTimestamp, updateDoc, doc
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+      authDomain: "nste-booking-system.firebaseapp.com",
+      projectId: "nste-booking-system",
+      storageBucket: "nste-booking-system.appspot.com",
+      messagingSenderId: "574207536433",
+      appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user) {
+        // Pre-fill email if available
+        document.getElementById("phone").value = user.phoneNumber || "";
+      }
+      fetchProducts();
+      fetchOrders();
+    });
+
+    document.getElementById("uploadBtn").onclick = async () => {
+      const name = document.getElementById("name").value.trim();
+      const type = document.getElementById("type").value.trim();
+      const image = document.getElementById("image").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+
+      if (!currentUser) return alert("Please login to list items");
+      
+      // Validate all required fields
+      if (!name || !type || !image || !phone) {
+        return alert("Please fill all required fields");
+      }
+
+      // Validate phone format (basic validation)
+      if (!/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(phone)) {
+        return alert("Please enter a valid phone number");
+      }
+
+      try {
+        await addDoc(collection(db, "products"), {
+          name, 
+          type, 
+          image,
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          userPhone: phone, // Use the provided phone number
+          createdAt: serverTimestamp(),
+          available: true
+        });
+
+        // Clear form
+        document.getElementById("name").value = "";
+        document.getElementById("type").value = "";
+        document.getElementById("image").value = "";
+        document.getElementById("phone").value = currentUser.phoneNumber || "";
+
+        // Show success message
+        const uploadBtn = document.getElementById("uploadBtn");
+        uploadBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Item Listed!';
+        uploadBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        uploadBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        
+        setTimeout(() => {
+          uploadBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> List Item';
+          uploadBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+          uploadBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 2000);
+
+        fetchProducts();
+      } catch (error) {
+        alert("Error listing item: " + error.message);
+      }
+    };
+
+    async function fetchProducts() {
+      const listDiv = document.getElementById("productList");
+      listDiv.innerHTML = `
+        <div class="text-center py-12 text-gray-500">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p>Loading products...</p>
+        </div>
+      `;
+      
+      try {
+        const q = query(collection(db, "products"), where("available", "==", true));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          listDiv.innerHTML = `
+            <div class="col-span-3 text-center py-12">
+              <i class="fas fa-box-open text-4xl text-gray-400 mb-4"></i>
+              <h3 class="text-xl font-medium text-gray-600">No equipment available</h3>
+              <p class="text-gray-500">Be the first to list an item!</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = "";
+        snap.forEach(docSnap => {
+          const p = docSnap.data();
+          const id = docSnap.id;
+          const isOwner = currentUser && p.userId === currentUser.uid;
+
+          html += `
+            <div class="product-card bg-white rounded-xl shadow-md overflow-hidden transition duration-300">
+              <div class="relative h-48 overflow-hidden">
+                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" />
+                ${isOwner ? 
+                  `<span class="absolute top-2 right-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    Your Item
+                  </span>` : ''}
+              </div>
+              <div class="p-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 class="text-lg font-bold text-gray-800">${p.name}</h2>
+                    <p class="text-gray-500 text-sm">${p.type}</p>
+                  </div>
+                  <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    Available
+                  </span>
+                </div>
+                
+                ${!isOwner ? `
+                  <div class="contact-info mt-2">
+                    ${p.userEmail ? `<p class="text-sm text-gray-600"><i class="fas fa-envelope mr-1"></i> ${p.userEmail}</p>` : ''}
+                    ${p.userPhone ? `<p class="text-sm text-gray-600"><i class="fas fa-phone mr-1"></i> ${p.userPhone}</p>` : ''}
+                  </div>
+                ` : ''}
+                
+                <div class="mt-4">
+                  ${isOwner
+                    ? `<button onclick="markAsSold('${id}')" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-tag mr-2"></i> Mark Sold
+                      </button>`
+                    : `<button onclick="orderProduct('${id}', '${p.userId}', '${p.userEmail || ''}', '${p.userPhone || ''}')" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-shopping-cart mr-2"></i> Order Now
+                      </button>`
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        listDiv.innerHTML = html;
+      } catch (error) {
+        listDiv.innerHTML = `
+          <div class="col-span-3 text-center py-12 text-red-500">
+            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p>Error loading products</p>
+          </div>
+        `;
+      }
+    }
+
+    async function fetchOrders() {
+      if (!currentUser) {
+        document.getElementById("orders").innerHTML = `
+          <div class="col-span-2 text-center py-8">
+            <i class="fas fa-user-lock text-2xl text-gray-400 mb-2"></i>
+            <p class="text-gray-600">Please login to view your orders</p>
+          </div>
+        `;
+        return;
+      }
+
+      const orderDiv = document.getElementById("orders");
+      orderDiv.innerHTML = `
+        <div class="col-span-2 text-center py-8 text-gray-500">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p>Loading your orders...</p>
+        </div>
+      `;
+
+      try {
+        let html = "";
+        
+        // Buyer orders
+        const buyerQuery = query(collection(db, "orders"), where("buyerId", "==", currentUser.uid));
+        const buyerSnap = await getDocs(buyerQuery);
+        
+        if (!buyerSnap.empty) {
+          html += `<div class="md:col-span-2">
+            <h3 class="text-lg font-medium text-gray-700 mb-3 flex items-center">
+              <i class="fas fa-shopping-bag mr-2 text-blue-500"></i> Your Purchases
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4 mb-6">`;
+          
+          buyerSnap.forEach(docSnap => {
+            const o = docSnap.data();
+            html += `
+              <div class="bg-white rounded-xl shadow-md p-4 border-l-4 ${getStatusBorderClass(o.status)}">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-medium text-gray-800">Order #${docSnap.id.substring(0, 6)}</h3>
+                  <span class="text-xs px-2 py-1 rounded-full ${getStatusClass(o.status)}">
+                    ${o.status}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Placed on ${new Date(o.createdAt?.seconds * 1000).toLocaleDateString()}</p>
+                <div class="contact-info">
+                  ${o.sellerEmail ? `<p class="text-sm text-gray-600"><i class="fas fa-envelope mr-1"></i> ${o.sellerEmail}</p>` : ''}
+                  ${o.sellerPhone ? `<p class="text-sm text-gray-600"><i class="fas fa-phone mr-1"></i> ${o.sellerPhone}</p>` : ''}
+                </div>
+              </div>
+            `;
+          });
+          html += `</div></div>`;
+        }
+
+        // Seller orders
+        const sellerQuery = query(collection(db, "orders"), where("sellerId", "==", currentUser.uid));
+        const sellerSnap = await getDocs(sellerQuery);
+        
+        if (!sellerSnap.empty) {
+          html += `<div class="md:col-span-2">
+            <h3 class="text-lg font-medium text-gray-700 mb-3 flex items-center">
+              <i class="fas fa-store-alt mr-2 text-green-500"></i> Your Sales
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4">`;
+          
+          sellerSnap.forEach(docSnap => {
+            const o = docSnap.data();
+            html += `
+              <div class="bg-white rounded-xl shadow-md p-4 border-l-4 ${getStatusBorderClass(o.status)}">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-medium text-gray-800">Order #${docSnap.id.substring(0, 6)}</h3>
+                  <span class="text-xs px-2 py-1 rounded-full ${getStatusClass(o.status)}">
+                    ${o.status}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Received on ${new Date(o.createdAt?.seconds * 1000).toLocaleDateString()}</p>
+                <div class="contact-info">
+                  ${o.buyerEmail ? `<p class="text-sm text-gray-600"><i class="fas fa-envelope mr-1"></i> ${o.buyerEmail}</p>` : ''}
+                  ${o.buyerPhone ? `<p class="text-sm text-gray-600"><i class="fas fa-phone mr-1"></i> ${o.buyerPhone}</p>` : ''}
+                </div>
+              </div>
+            `;
+          });
+          html += `</div></div>`;
+        }
+
+        if (html === "") {
+          html = `
+            <div class="col-span-2 text-center py-8">
+              <i class="fas fa-box-open text-2xl text-gray-400 mb-2"></i>
+              <h3 class="text-lg font-medium text-gray-600">No orders yet</h3>
+              <p class="text-gray-500">Your orders will appear here</p>
+            </div>
+          `;
+        }
+
+        orderDiv.innerHTML = html;
+      } catch (error) {
+        orderDiv.innerHTML = `
+          <div class="col-span-2 text-center py-8 text-red-500">
+            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p>Error loading orders</p>
+          </div>
+        `;
+      }
+    }
+
+    function getStatusClass(status) {
+      switch(status.toLowerCase()) {
+        case 'completed': return 'status-completed';
+        case 'cancelled': return 'status-cancelled';
+        default: return 'status-pending';
+      }
+    }
+
+    function getStatusBorderClass(status) {
+      switch(status.toLowerCase()) {
+        case 'completed': return 'border-green-500';
+        case 'cancelled': return 'border-red-500';
+        default: return 'border-yellow-500';
+      }
+    }
+
+    window.orderProduct = async (productId, sellerId, sellerEmail, sellerPhone) => {
+      if (!currentUser) return alert("Please login to place an order");
+
+      try {
+        const orderRef = await addDoc(collection(db, "orders"), {
+          productId,
+          sellerId,
+          sellerEmail,
+          sellerPhone,
+          buyerId: currentUser.uid,
+          buyerEmail: currentUser.email,
+          buyerPhone: document.getElementById("phone").value.trim(),
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+        toast.innerHTML = `
+          <i class="fas fa-check-circle mr-2"></i>
+          Order placed successfully! ID: ${orderRef.id.substring(0, 6)}...
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+
+        fetchOrders();
+      } catch (error) {
+        alert("Error placing order: " + error.message);
+      }
+    };
+
+    window.markAsSold = async (productId) => {
+      if (!confirm("Are you sure you want to mark this item as sold?")) return;
+      
+      try {
+        await updateDoc(doc(db, "products", productId), {
+          available: false
+        });
+
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+        toast.innerHTML = `
+          <i class="fas fa-check-circle mr-2"></i>
+          Item marked as sold successfully!
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 5000);
+
+        fetchProducts();
+      } catch (error) {
+        alert("Error marking as sold: " + error.message);
+      }
+    };
+  </script>
+</body>
+</html>

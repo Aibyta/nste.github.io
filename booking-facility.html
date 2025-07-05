@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Tennis Court | NSTE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/css/evo-calendar.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background-color: #f8f9fa; 
+    }
+    .facility-card { 
+      transition: transform 0.2s; 
+      border-radius: 10px;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .facility-card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    .court-image { 
+      height: 200px; 
+      object-fit: cover; 
+    }
+    .friend-badge {
+      background-color: #e3f2fd;
+      color: #0d6efd;
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
+      margin: 2rem auto;
+      display: block;
+    }
+    .slot-btn {
+      width: 120px;
+      margin: 5px;
+    }
+    #bookingDetails {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    .modal-header {
+      border-bottom: none;
+    }
+    .modal-footer {
+      border-top: none;
+    }
+    .theme-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <button class="btn btn-outline-secondary theme-btn" id="toggleTheme">🌙</button>
+
+  <div class="container py-4">
+    <div id="friendNotice" class="alert alert-info d-none">
+      <i class="bi bi-info-circle"></i> You're booking with: <strong id="friendName"></strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <h1 class="text-center mb-4">Book a Tennis Court</h1>
+    
+    <div id="facilityList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"></div>
+    
+    <div id="calendarSection" style="display: none;">
+      <button class="btn btn-outline-secondary mb-3" id="backToFacilitiesBtn">
+        <i class="bi bi-arrow-left"></i> Back to Courts
+      </button>
+      <h3 class="mb-3">Select Date for <span id="facilityNameDisplay"></span></h3>
+      <div id="evoCalendar"></div>
+    </div>
+  </div>
+
+  <!-- Slot Selection Modal -->
+  <div class="modal fade" id="slotModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Book <span id="selectedFacilityText"></span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <h6 class="mb-3">Date: <span id="selectedDateText"></span></h6>
+          <div id="slotButtons" class="d-flex flex-wrap justify-content-center"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snacks Selection Modal -->
+  <div class="modal fade" id="snacksModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Add Snacks to Your Booking</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row row-cols-1 row-cols-md-2 g-3" id="snacksList"></div>
+          <div class="mt-4">
+            <h5>Your Selections</h5>
+            <div id="selectedSnacks"></div>
+            <div class="d-flex justify-content-between mt-3">
+              <h6>Total: RM<span id="snacksTotal">0</span></h6>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="skipSnacksBtn">Skip Snacks</button>
+          <button class="btn btn-primary" id="proceedToCoachBtn">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coach Selection Modal -->
+  <div class="modal fade" id="coachModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Add a Coach to Your Session</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="coachOption" id="noCoach" value="no" checked>
+            <label class="form-check-label" for="noCoach">
+              No coach needed
+            </label>
+          </div>
+          <div class="row row-cols-1 g-3" id="coachesList"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+          <button class="btn btn-success" id="confirmBookingBtn">Confirm Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="bi bi-check-circle"></i> Booking Confirmed</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Your tennis court booking has been confirmed!</p>
+          <div id="bookingDetails" class="mt-3"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loading" class="text-center my-5">
+    <div class="spinner-border text-primary loading-spinner" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading courts...</p>
+  </div>
+
+  <!-- Firebase and other scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.3/evo-calendar/js/evo-calendar.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+      authDomain: "nste-booking-system.firebaseapp.com",
+      projectId: "nste-booking-system",
+      storageBucket: "nste-booking-system.appspot.com",
+      messagingSenderId: "574207536433",
+      appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let currentUser = null;
+    let selectedFacility = null;
+    let selectedDate = null;
+    let selectedSlot = null;
+    let selectedSnacks = [];
+    let selectedCoach = null;
+    let currentTheme = 'Royal Navy';
+    let bookingWithFriend = null;
+
+    // Sample data for snacks and coaches
+    const snacksData = [
+      { id: 1, name: "Energy Bar", price: 5, image: "https://cdn.mos.cms.futurecdn.net/CpcooP3z8M7QXfQ6Gfncdg.jpg" },
+      { id: 2, name: "Sports Drink", price: 8, image: "https://premierfootballuk.com/wp-content/uploads/Sports-drink.jpg" },
+      { id: 3, name: "Protein Shake", price: 12, image: "https://i5.walmartimages.com/asr/949c9c39-f0fb-4d3e-80e2-484dad00b8ec.41c3cb759a9ad3cdedabe2cf25cafd45.jpeg" },
+      { id: 4, name: "Banana", price: 2, image: "https://wallpaperaccess.com/full/889245.jpg" }
+    ];
+
+    const coachesData = [
+      { id: 1, name: "Coach Alex", price: 50, image: "https://cdn.sanity.io/images/1oknuwv8/production/cc88b7a952bbddfd5828b6dc28deee2619bcab75-2000x1334.webp?rect=0,138,2000,1058&w=1200&h=635&fit=crop&auto=format", experience: "5 years", rating: 4.8 },
+      { id: 2, name: "Coach Maria", price: 60, image: "https://dbukjj6eu5tsf.cloudfront.net/sidearm.sites/csufullerton.sidearmsports.com/images/2025/1/13/Ellie_Johnson_HS.jpg?width=300", experience: "7 years", rating: 4.9 },
+      { id: 3, name: "Coach Sam", price: 45, image: "https://fitintennis.com/wp-content/uploads/2020/04/Javier-professional-tennis-coach-in-Barcelona.jpg", experience: "3 years", rating: 4.5 }
+    ];
+
+    $(document).ready(function() {
+      // Check if booking with a friend
+      const friendData = sessionStorage.getItem('bookingWithFriend');
+      if (friendData) {
+        bookingWithFriend = JSON.parse(friendData);
+        document.getElementById('friendNotice').classList.remove('d-none');
+        document.getElementById('friendName').textContent = bookingWithFriend.name;
+        sessionStorage.removeItem('bookingWithFriend');
+      }
+
+      // Initialize calendar
+      $('#evoCalendar').evoCalendar({
+        theme: currentTheme,
+        sidebarDisplayDefault: false,
+        sidebarToggler: false,
+        eventDisplayDefault: false,
+        eventListToggler: false
+      });
+
+      // Theme toggle button
+      $('#toggleTheme').click(() => {
+        currentTheme = currentTheme === 'Royal Navy' ? 'Midnight Blue' : 'Royal Navy';
+        $('#toggleTheme').text(currentTheme === 'Royal Navy' ? '🌙' : '☀️');
+        $('#evoCalendar').evoCalendar('setTheme', currentTheme);
+      });
+
+      // Auth state listener
+      auth.onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) {
+          loadFacilities();
+        } else {
+          $('#facilityList').html('<div class="alert alert-warning">Please log in to book courts</div>');
+          $('#loading').hide();
+        }
+      });
+
+      // Back to facilities button
+      $('#backToFacilitiesBtn').click(() => {
+        $('#calendarSection').hide();
+        $('#facilityList').show();
+      });
+
+      // Date selection handler
+      $('#evoCalendar').on('selectDate', (_, newDate) => {
+        selectedDate = newDate;
+        loadBookingsForFacility();
+      });
+
+      // Skip snacks button
+      $('#skipSnacksBtn').click(() => {
+        selectedSnacks = [];
+        $('#snacksModal').modal('hide');
+        showCoachesSelection();
+      });
+
+      // Proceed to coaches button
+      $('#proceedToCoachBtn').click(() => {
+        $('#snacksModal').modal('hide');
+        showCoachesSelection();
+      });
+
+      // Confirm booking button
+      $('#confirmBookingBtn').click(() => {
+        const coachOption = $('input[name="coachOption"]:checked').val();
+        selectedCoach = coachOption === 'no' ? null : 
+          coachesData.find(c => c.id == coachOption);
+        completeBooking();
+      });
+    });
+
+    async function loadFacilities() {
+      try {
+        const snapshot = await db.collection('facilities')
+          .where('type', '==', 'tennis')
+          .get();
+        
+        $('#facilityList').empty();
+        $('#loading').hide();
+        
+        if (snapshot.empty) {
+          $('#facilityList').html('<div class="alert alert-info">No tennis courts available at the moment</div>');
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const facility = doc.data();
+          $('#facilityList').append(`
+            <div class="col">
+              <div class="card facility-card h-100">
+                <img src="${facility.image || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'}" 
+                     class="card-img-top court-image" alt="${facility.name}">
+                <div class="card-body">
+                  <h5 class="card-title">${facility.name}</h5>
+                  <p class="card-text">${facility.description || 'Standard tennis court'}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">RM${facility.price || '0'}/hour</span>
+                    <small class="text-muted">${facility.location || ''}</small>
+                  </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <button class="btn btn-primary w-100 book-btn" 
+                          data-facility-id="${doc.id}"
+                          data-facility-name="${facility.name}">
+                    <i class="bi bi-calendar-plus"></i> Book Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          `);
+        });
+
+        $('.book-btn').click(function() {
+          const facilityId = $(this).data('facility-id');
+          const facilityName = $(this).data('facility-name');
+          
+          db.collection('facilities').doc(facilityId).get()
+            .then(doc => {
+              selectedFacility = { id: facilityId, ...doc.data() };
+              $('#facilityNameDisplay').text(facilityName);
+              $('#facilityList').hide();
+              $('#calendarSection').show();
+              $('#evoCalendar').evoCalendar('addCalendarEvent', []);
+            })
+            .catch(error => {
+              console.error("Error loading facility:", error);
+              alert("Error loading court details. Please try again.");
+            });
+        });
+      } catch (error) {
+        console.error("Error loading facilities:", error);
+        $('#facilityList').html('<div class="alert alert-danger">Error loading courts. Please try again.</div>');
+        $('#loading').hide();
+      }
+    }
+
+    async function loadBookingsForFacility() {
+      try {
+        const snapshot = await db.collection('bookings')
+          .where('date', '==', selectedDate)
+          .where('facilityId', '==', selectedFacility.id)
+          .get();
+        
+        const bookings = {};
+        selectedFacility.slots.forEach(slot => {
+          bookings[slot] = false;
+        });
+
+        snapshot.forEach(doc => {
+          const slot = doc.data().slot;
+          bookings[slot] = true;
+        });
+
+        renderSlotButtons(bookings);
+        $('#selectedFacilityText').text(selectedFacility.name);
+        $('#selectedDateText').text(selectedDate);
+        $('#slotModal').modal('show');
+      } catch (error) {
+        console.error("Error loading bookings:", error);
+        alert("Error loading available slots. Please try again.");
+      }
+    }
+
+    function renderSlotButtons(bookings) {
+      $('#slotButtons').empty();
+      
+      selectedFacility.slots.forEach(slot => {
+        const isBooked = bookings[slot];
+        const btn = $(`
+          <button class="btn ${isBooked ? 'btn-secondary' : 'btn-primary'} slot-btn" 
+                  ${isBooked ? 'disabled' : ''}>
+            ${slot}
+            ${isBooked ? '<br><small>Booked</small>' : ''}
+          </button>
+        `);
+        
+        if (!isBooked) {
+          btn.click(() => {
+            selectedSlot = slot;
+            $('#slotModal').modal('hide');
+            showSnacksSelection();
+          });
+        }
+        
+        $('#slotButtons').append(btn);
+      });
+    }
+
+    function showSnacksSelection() {
+      // Render snacks list
+      $('#snacksList').empty();
+      snacksData.forEach(snack => {
+        $('#snacksList').append(`
+          <div class="col">
+            <div class="card h-100 snack-item">
+              <img src="${snack.image}" class="card-img-top" style="height: 120px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">${snack.name}</h5>
+                <p class="card-text">RM${snack.price.toFixed(2)}</p>
+                <button class="btn btn-sm btn-outline-primary w-100 add-snack-btn" data-id="${snack.id}">
+                  Add to Order
+                </button>
+              </div>
+            </div>
+          </div>
+        `);
+      });
+
+      // Initialize selected snacks display
+      updateSelectedSnacksDisplay();
+
+      // Add snack button handler
+      $('.add-snack-btn').click(function() {
+        const snackId = parseInt($(this).data('id'));
+        const snack = snacksData.find(s => s.id === snackId);
+        
+        const existingIndex = selectedSnacks.findIndex(s => s.id === snackId);
+        if (existingIndex >= 0) {
+          selectedSnacks[existingIndex].quantity++;
+        } else {
+          selectedSnacks.push({
+            id: snack.id,
+            name: snack.name,
+            price: snack.price,
+            quantity: 1
+          });
+        }
+        
+        updateSelectedSnacksDisplay();
+      });
+
+      // Remove snack handler
+      $(document).on('click', '.remove-snack-btn', function() {
+        const snackId = parseInt($(this).data('id'));
+        selectedSnacks = selectedSnacks.filter(s => s.id !== snackId);
+        updateSelectedSnacksDisplay();
+      });
+
+      $('#snacksModal').modal('show');
+    }
+
+    function updateSelectedSnacksDisplay() {
+      $('#selectedSnacks').empty();
+      let total = 0;
+      
+      if (selectedSnacks.length === 0) {
+        $('#selectedSnacks').html('<p class="text-muted">No snacks selected</p>');
+      } else {
+        selectedSnacks.forEach(snack => {
+          $('#selectedSnacks').append(`
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>${snack.name} (${snack.quantity})</span>
+              <div>
+                <span class="me-2">RM${(snack.price * snack.quantity).toFixed(2)}</span>
+                <button class="btn btn-sm btn-outline-danger remove-snack-btn" data-id="${snack.id}">
+                  ×
+                </button>
+              </div>
+            </div>
+          `);
+          total += snack.price * snack.quantity;
+        });
+      }
+      
+      $('#snacksTotal').text(total.toFixed(2));
+    }
+
+    function showCoachesSelection() {
+      // Render coaches list
+      $('#coachesList').empty();
+      coachesData.forEach(coach => {
+        $('#coachesList').append(`
+          <div class="col">
+            <div class="card coach-item">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <img src="${coach.image}" class="img-fluid rounded-start h-100" style="object-fit: cover;">
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h5 class="card-title">${coach.name}</h5>
+                    <p class="card-text"><small class="text-muted">${coach.experience} experience</small></p>
+                    <p class="card-text"><i class="bi bi-star-fill text-warning"></i> ${coach.rating}</p>
+                    <p class="card-text">RM${coach.price}/session</p>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="coachOption" 
+                             id="coach-${coach.id}" value="${coach.id}">
+                      <label class="form-check-label" for="coach-${coach.id}">
+                        Select Coach
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `);
+      });
+
+      $('#coachModal').modal('show');
+    }
+
+    async function completeBooking() {
+      if (!currentUser) {
+        alert("Please log in to complete booking");
+        return;
+      }
+
+      const bookingData = {
+        date: selectedDate,
+        slot: selectedSlot,
+        facilityId: selectedFacility.id,
+        facilityName: selectedFacility.name,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || currentUser.email || "Guest",
+        email: currentUser.email || "no-email@example.com",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        price: selectedFacility.price,
+        status: 'confirmed',
+        type: 'tennis',
+        addons: {
+          snacks: selectedSnacks,
+          coach: selectedCoach ? {
+            id: selectedCoach.id,
+            name: selectedCoach.name,
+            price: selectedCoach.price
+          } : null
+        },
+        totalAmount: calculateTotal(),
+        friendId: bookingWithFriend ? bookingWithFriend.id : null,
+        friendName: bookingWithFriend ? bookingWithFriend.name : null
+      };
+
+      try {
+        await db.collection('bookings').add(bookingData);
+        
+        // Show confirmation
+        $('#bookingDetails').html(`
+          <div class="mb-2"><strong>Court:</strong> ${selectedFacility.name}</div>
+          <div class="mb-2"><strong>Date:</strong> ${selectedDate}</div>
+          <div class="mb-2"><strong>Time:</strong> ${selectedSlot}</div>
+          ${bookingWithFriend ? `
+          <div class="mb-2"><strong>Playing with:</strong> ${bookingWithFriend.name}</div>
+          ` : ''}
+          <div class="mb-2"><strong>Base Price:</strong> RM${selectedFacility.price.toFixed(2)}</div>
+          ${selectedSnacks.length > 0 ? `
+          <div class="mb-2"><strong>Snacks:</strong> 
+            ${selectedSnacks.map(s => `${s.name} (${s.quantity})`).join(', ')}
+          </div>
+          ` : ''}
+          ${selectedCoach ? `
+          <div class="mb-2"><strong>Coach:</strong> ${selectedCoach.name}</div>
+          ` : ''}
+          <div class="mt-3 pt-2 border-top"><strong>Total Amount:</strong> RM${bookingData.totalAmount.toFixed(2)}</div>
+        `);
+        $('#confirmModal').modal('show');
+        
+        // Reset selections
+        selectedFacility = null;
+        selectedDate = null;
+        selectedSlot = null;
+        selectedSnacks = [];
+        selectedCoach = null;
+        bookingWithFriend = null;
+        
+        // Return to facility list
+        $('#calendarSection').hide();
+        $('#facilityList').show();
+        $('#friendNotice').addClass('d-none');
+      } catch (error) {
+        console.error("Error saving booking:", error);
+        alert("Error completing booking. Please try again.");
+      }
+    }
+
+    function calculateTotal() {
+      let total = selectedFacility.price;
+      
+      // Add snacks total
+      selectedSnacks.forEach(snack => {
+        total += snack.price * snack.quantity;
+      });
+      
+      // Add coach price if selected
+      if (selectedCoach) {
+        total += selectedCoach.price;
+      }
+      
+      return total;
+    }
+  </script>
+</body>
+</html>
