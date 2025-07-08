@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | NSTE Tennis Partners</title>
+    <title>Sign Up | NSTE Sports Partners</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -149,12 +149,32 @@
             background-color: #6c757d;
             color: white;
         }
+        .sport-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        .sport-tag {
+            padding: 0.5rem 1rem;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sport-tag:hover {
+            background-color: #dee2e6;
+        }
+        .sport-tag.selected {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="signup-container">
         <div class="logo">
-            <a href="index.html"><img src="img/logo.png" alt="NSTE Tennis"></a>
+            <a href="index.html"><img src="img/logo.png" alt="NSTE Sports"></a>
         </div>
         
         <!-- Step Indicator -->
@@ -194,9 +214,29 @@
                 </div>
             </div>
             
-            <!-- Step 2: Tennis Profile -->
+            <!-- Step 2: Sports Profile -->
             <div class="form-step" id="step2">
-                <h2 class="form-title">Tennis Profile</h2>
+                <h2 class="form-title">Sports Profile</h2>
+                
+                <div class="mb-3">
+                    <label class="form-label">Sports You Play</label>
+                    <p class="text-muted mb-2">Select all that apply</p>
+                    <div class="sport-options">
+                        <div class="sport-tag" data-sport="tennis" onclick="toggleSport(this)">
+                            <i class="bi bi-tennis-ball"></i> Tennis
+                        </div>
+                        <div class="sport-tag" data-sport="badminton" onclick="toggleSport(this)">
+                            <i class="bi bi-shuttle"></i> Badminton
+                        </div>
+                        <div class="sport-tag" data-sport="table-tennis" onclick="toggleSport(this)">
+                            <i class="bi bi-table"></i> Table Tennis
+                        </div>
+                        <div class="sport-tag" data-sport="squash" onclick="toggleSport(this)">
+                            <i class="bi bi-diamond"></i> Squash
+                        </div>
+                    </div>
+                    <input type="hidden" id="sports" required>
+                </div>
                 
                 <div class="mb-3">
                     <label for="profileUrl" class="form-label">Profile Picture URL</label>
@@ -210,8 +250,26 @@
                     <input type="tel" class="form-control" id="phone">
                 </div>
                 
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-prev" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Previous</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep(2)">Next <i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Skill and Availability -->
+            <div class="form-step" id="step3">
+                <h2 class="form-title">Skill and Availability</h2>
+                
                 <div class="mb-3">
-                    <label class="form-label">Skill Level</label>
+                    <label class="form-label">Primary Sport</label>
+                    <select class="form-select" id="primarySport" required>
+                        <option value="" selected disabled>Select your primary sport</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Skill Level (for primary sport)</label>
                     <div class="skill-level-options">
                         <div class="skill-level-btn" data-level="beginner" onclick="selectSkillLevel(this)">
                             Beginner
@@ -237,16 +295,6 @@
                         <option value="Central">Central</option>
                     </select>
                 </div>
-                
-                <div class="form-navigation">
-                    <button type="button" class="btn btn-prev" onclick="prevStep(2)"><i class="bi bi-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn btn-next" onclick="nextStep(2)">Next <i class="bi bi-arrow-right"></i></button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Availability -->
-            <div class="form-step" id="step3">
-                <h2 class="form-title">Playing Availability</h2>
                 
                 <div class="mb-3">
                     <label class="form-label">Playing Frequency</label>
@@ -317,6 +365,47 @@
             }
         });
 
+        // Sport selection
+        function toggleSport(element) {
+            element.classList.toggle('selected');
+            updateSportsSelection();
+            updatePrimarySportDropdown();
+        }
+
+        function updateSportsSelection() {
+            const selectedSports = Array.from(document.querySelectorAll('.sport-tag.selected'))
+                .map(el => el.dataset.sport);
+            document.getElementById('sports').value = JSON.stringify(selectedSports);
+        }
+
+        function updatePrimarySportDropdown() {
+            const primarySportSelect = document.getElementById('primarySport');
+            // Clear existing options except the first one
+            while (primarySportSelect.options.length > 1) {
+                primarySportSelect.remove(1);
+            }
+            
+            // Get selected sports
+            const selectedSports = Array.from(document.querySelectorAll('.sport-tag.selected'));
+            
+            if (selectedSports.length > 0) {
+                // Add each selected sport as an option
+                selectedSports.forEach(sportTag => {
+                    const sport = sportTag.dataset.sport;
+                    const option = document.createElement('option');
+                    option.value = sport;
+                    option.textContent = sport.charAt(0).toUpperCase() + sport.slice(1).replace('-', ' ');
+                    primarySportSelect.appendChild(option);
+                });
+                
+                // Enable the dropdown
+                primarySportSelect.disabled = false;
+            } else {
+                // Disable the dropdown if no sports selected
+                primarySportSelect.disabled = true;
+            }
+        }
+
         // Skill level selection
         function selectSkillLevel(element) {
             document.querySelectorAll('.skill-level-btn').forEach(btn => {
@@ -374,11 +463,22 @@
                 }
                 return true;
             } else if (step === 2) {
+                const sports = document.getElementById("sports").value;
+                
+                if (!sports || JSON.parse(sports).length === 0) {
+                    alert("Please select at least one sport");
+                    return false;
+                }
+                return true;
+            } else if (step === 3) {
+                const primarySport = document.getElementById("primarySport").value;
                 const skillLevel = document.getElementById("skillLevel").value;
                 const location = document.getElementById("location").value;
+                const playingFrequency = document.getElementById("playingFrequency").value;
+                const preferredTimes = document.getElementById("preferredTimes").value;
                 
-                if (!skillLevel || !location) {
-                    alert("Please select your skill level and preferred location");
+                if (!primarySport || !skillLevel || !location || !playingFrequency || !preferredTimes) {
+                    alert("Please fill in all required fields");
                     return false;
                 }
                 return true;
@@ -397,6 +497,8 @@
             const password = document.getElementById("password").value;
             const phone = document.getElementById("phone").value;
             const profileUrl = document.getElementById("profileUrl").value || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
+            const sports = JSON.parse(document.getElementById("sports").value);
+            const primarySport = document.getElementById("primarySport").value;
             const skillLevel = document.getElementById("skillLevel").value;
             const location = document.getElementById("location").value;
             const playingFrequency = document.getElementById("playingFrequency").value;
@@ -414,6 +516,8 @@
                         email: email,
                         phone: phone,
                         photoURL: profileUrl,
+                        sports: sports,
+                        primarySport: primarySport,
                         skillLevel: skillLevel,
                         location: location,
                         playingFrequency: playingFrequency,
