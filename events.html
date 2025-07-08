@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upcoming Tennis Events</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #81c784;
+            --primary-dark: #1b5e20;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --confirmed: #4caf50;
+            --disabled: #bdbdbd;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        
+        .events-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 30px;
+        }
+        
+        .event-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--border);
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .event-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .event-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .event-organizer {
+            margin-top: 8px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+        
+        .event-body {
+            padding: 20px;
+        }
+        
+        .event-detail {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .event-detail i {
+            margin-right: 12px;
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+            margin-top: 3px;
+        }
+        
+        .event-detail-content {
+            flex: 1;
+        }
+        
+        .event-detail-label {
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+        }
+        
+        .event-detail-value {
+            color: var(--text);
+            font-size: 1.05rem;
+        }
+        
+        .participants-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+        
+        .participants-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .participants-list {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .participant-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: rgba(129, 199, 132, 0.1);
+            border-radius: 6px;
+        }
+        
+        .participant-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .event-actions {
+            padding: 15px 20px;
+            background-color: rgba(129, 199, 132, 0.05);
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-confirmed {
+            background-color: var(--confirmed);
+            color: white;
+            cursor: default;
+        }
+        
+        .btn-disabled {
+            background-color: var(--disabled);
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary i,
+        .btn-confirmed i,
+        .btn-disabled i {
+            margin-right: 8px;
+        }
+        
+        .participant-status {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            color: var(--confirmed);
+            font-weight: 500;
+            margin-left: 34px;
+        }
+        
+        .no-events {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        
+        .no-events i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #cccccc;
+        }
+        
+        .loading {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 60px 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .events-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-tennis-ball"></i> Upcoming Tennis Events</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="events-container" id="eventsContainer">
+            <div class="loading">
+                <p>Loading events...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration - replace with your actual config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjMwv9Bxff1bUE7CR_S-DPx3NV5kkinTU",
+            authDomain: "nste-booking-system.firebaseapp.com",
+            projectId: "nste-booking-system",
+            storageBucket: "nste-booking-system.appspot.com",
+            messagingSenderId: "574207536433",
+            appId: "1:574207536433:web:0d2aeaacdc280cec019410"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const eventsContainer = document.getElementById('eventsContainer');
+            const user = await new Promise(resolve => {
+                const unsubscribe = auth.onAuthStateChanged(user => {
+                    unsubscribe();
+                    resolve(user);
+                });
+            });
+
+            // Get current date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayString = today.toISOString().split('T')[0];
+            
+            // Fetch events from Firestore
+            db.collection("events")
+                .where("date", ">=", todayString)
+                .orderBy("date")
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        showNoEventsMessage();
+                        return;
+                    }
+                    
+                    const events = [];
+                    querySnapshot.forEach((doc) => {
+                        const event = doc.data();
+                        event.id = doc.id;
+                        events.push(event);
+                    });
+                    
+                    displayEvents(events, user);
+                })
+                .catch((error) => {
+                    console.error("Error getting events: ", error);
+                    showErrorMessage();
+                });
+            
+            function displayEvents(events, currentUser) {
+                eventsContainer.innerHTML = '';
+                
+                events.forEach(event => {
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'event-card';
+                    
+                    const dateObj = new Date(event.date);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    
+                    // Check if current user is the organizer
+                    const isOrganizer = currentUser && event.organizerName === currentUser.email;
+                    // Check if current user has already confirmed
+                    const hasConfirmed = currentUser && event.participants && 
+                                      event.participants.includes(currentUser.email);
+                    
+                    // Build participants section
+                    let participantsHtml = '';
+                    if (event.participants && event.participants.length > 0) {
+                        participantsHtml = `
+                            <div class="participants-section">
+                                <div class="participants-title">
+                                    <i class="fas fa-users" style="margin-right: 8px;"></i>
+                                    ${isOrganizer ? 'Confirmed Participants' : 'Participants'} (${event.participants.length})
+                                </div>
+                                <div class="participants-list">
+                                    ${event.participants.map(participant => `
+                                        <div class="participant-item">
+                                            <div class="participant-avatar">
+                                                ${participant.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span>${participant}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ${hasConfirmed ? `
+                                <div class="participant-status">
+                                    <i class="fas fa-check-circle"></i> You have confirmed attendance
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    // Build action button
+                    let actionButton = '';
+                    if (currentUser) {
+                        if (hasConfirmed) {
+                            actionButton = `
+                                <div class="event-actions">
+                                    <button class="btn btn-confirmed" disabled>
+                                        <i class="fas fa-check-circle"></i> Confirmed
+                                    </button>
+                                </div>
+                            `;
+                        } else if (isOrganizer) {
+                            actionButton = `
+                                <div class="event-actions">
+                                    <button class="btn btn-disabled" disabled>
+                                        <i class="fas fa-user-tie"></i> You're the Organizer
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            actionButton = `
+                                <div class="event-actions">
+                                    <button class="btn btn-primary" onclick="confirmAttendance('${event.id}', '${currentUser.email}')">
+                                        <i class="fas fa-check-circle"></i> Confirm Attendance
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        actionButton = `
+                            <div class="event-actions">
+                                <button class="btn btn-disabled" disabled>
+                                    <i class="fas fa-sign-in-alt"></i> Sign in to Confirm
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    eventCard.innerHTML = `
+                        <div class="event-header">
+                            <h3 class="event-title">${event.name || 'Tennis Match'}</h3>
+                            <div class="event-organizer">
+                                <i class="fas fa-user"></i> Organized by: ${event.organizerName || 'Organizer'}
+                            </div>
+                        </div>
+                        <div class="event-body">
+                            <div class="event-detail">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div class="event-detail-content">
+                                    <div class="event-detail-label">Date</div>
+                                    <div class="event-detail-value">${formattedDate}</div>
+                                </div>
+                            </div>
+                            <div class="event-detail">
+                                <i class="fas fa-clock"></i>
+                                <div class="event-detail-content">
+                                    <div class="event-detail-label">Time</div>
+                                    <div class="event-detail-value">${event.time || 'To be determined'}</div>
+                                </div>
+                            </div>
+                            <div class="event-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="event-detail-content">
+                                    <div class="event-detail-label">Location</div>
+                                    <div class="event-detail-value">${event.facility || 'Location to be announced'}</div>
+                                </div>
+                            </div>
+                            ${participantsHtml}
+                        </div>
+                        ${actionButton}
+                    `;
+                    
+                    eventsContainer.appendChild(eventCard);
+                });
+            }
+            
+            function showNoEventsMessage() {
+                eventsContainer.innerHTML = `
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No Upcoming Events</h3>
+                        <p>There are currently no scheduled events. Check back later or create your own event!</p>
+                    </div>
+                `;
+            }
+            
+            function showErrorMessage() {
+                eventsContainer.innerHTML = `
+                    <div class="no-events">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error Loading Events</h3>
+                        <p>We couldn't load the events at this time. Please try again later.</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()" style="margin-top: 15px;">
+                            <i class="fas fa-sync-alt"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        });
+        
+        async function confirmAttendance(eventId, userEmail) {
+            try {
+                if (confirm('Are you sure you want to confirm your attendance for this event?')) {
+                    await db.collection("events").doc(eventId).update({
+                        participants: firebase.firestore.FieldValue.arrayUnion(userEmail)
+                    });
+                    alert("Your attendance has been confirmed!");
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error("Error confirming attendance: ", error);
+                alert("There was an error confirming your attendance. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>
